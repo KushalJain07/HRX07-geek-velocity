@@ -9,9 +9,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./src/*"
+        "./src/*",
+        "./src/student/*",
+        "./src/teacher/*",
       ]
-    }
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

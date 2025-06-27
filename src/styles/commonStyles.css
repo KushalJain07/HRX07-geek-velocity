@@ -1,0 +1,214 @@
+/* Layout */
+.container {
+  min-height: 100vh;
+  background-color: #f4f6fb;
+}
+
+.centeredContainer {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f6fb;
+}
+
+.login-flex-bg {
+  background: linear-gradient(135deg, #e7eaf6, #c3cfe2);
+  min-height: 100vh;
+  width: 100vw;
+}
+
+.card, .login-card {
+  width: 380px;
+  max-width: 95vw;
+  background-color: #f9fafe;
+  border-radius: 18px;
+  padding: 36px 28px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.10);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px;
+}
+
+@media (max-width: 600px) {
+  .card, .login-card {
+    width: 100vw;
+    max-width: 100vw;
+    padding: 24px 8px;
+    border-radius: 0;
+    margin: 0;
+  }
+}
+
+/* Image styles */
+.login-image-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px;
+}
+.login-role-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #e7eaf6;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.10);
+}
+
+/* Role toggle */
+.login-role-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  width: 100%;
+}
+.toggleButton {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 20px;
+  align-items: center;
+  margin: 0 2px;
+  background: none;
+  border: 1px solid #667eea;
+  color: #667eea;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggleButtonSelected {
+  background-color: #667eea;
+  color: #fff;
+}
+
+/* Text */
+.mainTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: #22223b;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.mainSubtitle {
+  font-size: 14px;
+  color: #7a7e9a;
+  margin-bottom: 18px;
+}
+
+.signInHeading {
+  color: #22223b;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 22px;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+.link {
+  margin-top: 18px;
+  color: #667eea;
+  text-align: center;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Inputs */
+.login-form-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+.input {
+  height: 48px;
+  font-size: 16px;
+  color: #22223b;
+  background-color: #f7f7fa;
+  border-radius: 12px;
+  border: 1px solid #e0e3ef;
+  padding: 0 14px;
+  outline: none;
+  transition: border 0.2s;
+}
+.input:focus {
+  border: 1.5px solid #667eea;
+}
+
+/* Buttons */
+.loginButton {
+  border-radius: 14px;
+  margin-top: 8px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea, #5a60ea);
+  color: #fff;
+  padding: 14px 0;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s, transform 0.1s;
+}
+.loginButton:hover {
+  background: #4b5bdc;
+  transform: scale(0.98);
+}
+
+/* Error */
+.login-error {
+  color: #d32f2f;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* Modals */
+.modalContainer {
+  min-height: 100vh;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalContent {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 80vw;
+  max-width: 400px;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #22223b;
+  margin-bottom: 12px;
+}
+
+.modalMessage {
+  font-size: 14px;
+  color: #7a7e9a;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modalCloseButton {
+  background-color: #667eea;
+  border-radius: 12px;
+  padding: 10px 20px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}

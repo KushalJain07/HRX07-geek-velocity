@@ -1,45 +1,83 @@
 'use client'
 
+import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Input } from '@/components/ui/input'
 
 export default function EnterCodeScreen() {
+    const inputRefs = useRef<Array<HTMLInputElement | null>>([])
+    const [displayedText, setDisplayedText] = useState('')
+    const fullText = "Start your own epic Journey"
+
+    // Typewriter animation
+    useEffect(() => {
+        let i = 0
+        const interval = setInterval(() => {
+            if (i < fullText.length - 1) {
+                setDisplayedText((prev) => prev + fullText[i])
+                i++;
+            } else {
+                clearInterval(interval)
+            }
+        }, 80)
+        return () => clearInterval(interval)
+    }, [])
+
+
+    const handleInput = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        index: number
+    ) => {
+        const { value } = e.target
+        if (value.length === 1) {
+            const nextInput = inputRefs.current[index + 1]
+            if (nextInput) nextInput.focus()
+        }
+    }
+
     return (
         <motion.div
-            className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-500 to-red-500 px-6"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="min-h-screen flex flex-col items-center justify-center px-4 py-10 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] text-white"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.7 }}
         >
-            <h1 className="text-white text-3xl font-bold text-center mb-8">
-                Start your own epic Journey
-            </h1>
+            <motion.h1
+                className="text-3xl md:text-4xl font-extrabold text-center mb-8 bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-600 bg-clip-text text-transparent drop-shadow-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+            >
+                {displayedText}
+                <span className="animate-pulse text-white">|</span>
+            </motion.h1>
 
-            <div className="flex items-center gap-2 mb-4">
-                {[...Array(3)].map((_, i) => (
-                    <Input
-                        key={`left-${i}`}
+            <motion.div
+                className="flex flex-wrap justify-center gap-5 mb-6 max-w-[90vw]"
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.6, type: 'spring', stiffness: 100 }}
+            >
+                {[...Array(8)].map((_, i) => (
+                    <motion.input
+                        key={i}
                         type="text"
                         maxLength={1}
-                        className="w-12 h-14 text-center text-white text-xl font-semibold backdrop-blur-md bg-white/10 rounded-md border-none focus-visible:ring-1 focus-visible:ring-white"
+                        ref={(el) => (inputRefs.current[i] = el)}
+                        onChange={(e) => handleInput(e, i)}
+                        className="w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold rounded-lg border border-white/20 bg-white/10 text-white backdrop-blur-md shadow-lg shadow-blue-400/10 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all duration-200"
+                        whileFocus={{ scale: 1.1 }}
                     />
                 ))}
+            </motion.div>
 
-                <span className="text-white text-2xl font-semibold px-2">-</span>
-
-                {[...Array(3)].map((_, i) => (
-                    <Input
-                        key={`right-${i}`}
-                        type="text"
-                        maxLength={1}
-                        className="w-12 h-14 text-center text-white text-xl font-semibold backdrop-blur-md bg-white/10 rounded-md border-none focus-visible:ring-1 focus-visible:ring-white"
-                    />
-                ))}
-            </div>
-
-            <p className="text-white text-base text-center">
+            <motion.p
+                className="text-base text-center text-white/80 px-2 md:px-4 font-medium"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9 }}
+            >
                 Enter the classroom code given by your teacher
-            </p>
+            </motion.p>
         </motion.div>
     )
 }

@@ -1,8 +1,13 @@
-import Login from './pages/Login';
-import './App.css'
-
+import React from 'react'
+import EnterCodeScreen from './screens/student/BeginScreen'; // relative path, no alias
+import OptimizedCosmicMap from './screens/student/LevelMapScreen';
 function App() {
-  return <Login />;
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      {/* <EnterCodeScreen /> */}
+      <OptimizedCosmicMap />
+    </main>
+  )
 }
 
 export default App

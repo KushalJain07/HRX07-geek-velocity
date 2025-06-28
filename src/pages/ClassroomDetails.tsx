@@ -28,6 +28,8 @@ interface Mission {
   typeValue: string;
   rewardType: string;
   rewardValue: string;
+  uploadedFile: File | null;
+  fileName: string;
   classroomId: number;
   createdAt: string;
 }
@@ -55,6 +57,8 @@ const ClassroomDetails: React.FC = () => {
   const [watchTime, setWatchTime] = useState("");
   const [rewardType, setRewardType] = useState("");
   const [rewardValue, setRewardValue] = useState("");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState("");
 
   // Load persistent class code and missions
   useEffect(() => {
@@ -135,9 +139,10 @@ const ClassroomDetails: React.FC = () => {
       !missionType.trim() ||
       !hasValidTypeValue ||
       !rewardType.trim() ||
-      !rewardValue.trim()
+      !rewardValue.trim() ||
+      !uploadedFile
     ) {
-      alert("Please fill in all fields");
+      alert("Please fill in all fields including file upload");
       return;
     }
 
@@ -154,6 +159,8 @@ const ClassroomDetails: React.FC = () => {
           : watchTime,
       rewardType: rewardType,
       rewardValue: rewardValue,
+      uploadedFile: uploadedFile,
+      fileName: fileName,
       classroomId: Number(id),
       createdAt: new Date().toISOString(),
     };
@@ -168,6 +175,8 @@ const ClassroomDetails: React.FC = () => {
     setWatchTime("");
     setRewardType("");
     setRewardValue("");
+    setUploadedFile(null);
+    setFileName("");
     setShowCreateMission(false);
   };
 
@@ -183,6 +192,21 @@ const ClassroomDetails: React.FC = () => {
   // Get reward options
   const getRewardOptions = () => {
     return [{ value: "scholar_stones", label: "Scholar Stones" }];
+  };
+
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      setFileName(file.name);
+    }
+  };
+
+  // Remove uploaded file
+  const removeFile = () => {
+    setUploadedFile(null);
+    setFileName("");
   };
 
   const deleteMission = (missionId: number) => {
@@ -480,6 +504,51 @@ const ClassroomDetails: React.FC = () => {
                     />
                   </div>
                 )}
+                <div className="form-group">
+                  <label>Upload File *</label>
+                  <div className="file-upload-container">
+                    {!uploadedFile ? (
+                      <div className="file-upload-area">
+                        <input
+                          type="file"
+                          onChange={handleFileUpload}
+                          accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx"
+                          className="file-input"
+                          id="file-upload"
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className="file-upload-label"
+                        >
+                          <div className="upload-icon">📁</div>
+                          <div className="upload-text">
+                            <span>Click to upload or drag and drop</span>
+                            <small>
+                              PDF, DOC, DOCX, TXT, PPT, PPTX, XLS, XLSX (Max
+                              10MB)
+                            </small>
+                          </div>
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="file-preview">
+                        <div className="file-info">
+                          <span className="file-name">{fileName}</span>
+                          <span className="file-size">
+                            {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={removeFile}
+                          className="remove-file-btn"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <button onClick={createMission} className="submit-btn">
                   Create Mission
                 </button>
@@ -545,6 +614,10 @@ const ClassroomDetails: React.FC = () => {
                           <div className="detail-row">
                             <strong>Reward:</strong> {mission.rewardType} -{" "}
                             {mission.rewardValue}
+                          </div>
+                          <div className="detail-row">
+                            <strong>File:</strong>{" "}
+                            {mission.fileName || "No file uploaded"}
                           </div>
                           <div className="detail-row">
                             <strong>Created:</strong>{" "}
@@ -1135,6 +1208,106 @@ const ClassroomDetails: React.FC = () => {
 
         .detail-row strong {
           color: #1f2937;
+        }
+
+        /* File Upload Styling */
+        .file-upload-container {
+          width: 100%;
+        }
+
+        .file-upload-area {
+          position: relative;
+          border: 2px dashed #d1d5db;
+          border-radius: 0.5rem;
+          padding: 2rem;
+          text-align: center;
+          transition: all 0.2s;
+          background: #f9fafb;
+        }
+
+        .file-upload-area:hover {
+          border-color: #667eea;
+          background: #f0f4ff;
+        }
+
+        .file-input {
+          position: absolute;
+          opacity: 0;
+          width: 100%;
+          height: 100%;
+          cursor: pointer;
+        }
+
+        .file-upload-label {
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .upload-icon {
+          font-size: 2rem;
+          color: #6b7280;
+        }
+
+        .upload-text {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .upload-text span {
+          font-weight: 500;
+          color: #374151;
+        }
+
+        .upload-text small {
+          color: #6b7280;
+          font-size: 0.75rem;
+        }
+
+        .file-preview {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem;
+          background: #f0f9ff;
+          border: 1px solid #0ea5e9;
+          border-radius: 0.5rem;
+          margin-top: 0.5rem;
+        }
+
+        .file-info {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .file-name {
+          font-weight: 500;
+          color: #0c4a6e;
+          font-size: 0.875rem;
+        }
+
+        .file-size {
+          color: #0369a1;
+          font-size: 0.75rem;
+        }
+
+        .remove-file-btn {
+          background: #ef4444;
+          color: white;
+          border: none;
+          border-radius: 0.25rem;
+          padding: 0.25rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .remove-file-btn:hover {
+          background: #dc2626;
+          transform: scale(1.1);
         }
 
         .modal-overlay {

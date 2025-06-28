@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/moving-border";
+import { useNavigate } from 'react-router-dom';
 
 export default function EnterCodeScreen() {
     const inputRefs = useRef<Array<HTMLInputElement | null>>([])
@@ -33,6 +34,10 @@ export default function EnterCodeScreen() {
             const nextInput = inputRefs.current[index + 1]
             if (nextInput) nextInput.focus()
         }
+    }
+
+    const handleGoClick = () => {
+        navigate('/level-map')
     }
 
     return (
@@ -79,7 +84,8 @@ export default function EnterCodeScreen() {
             <div>
             <Button
             borderRadius="10rem"
-            className=" bg-white dark:bg-slate-900 text-black dark:text-white border-neutral-200 dark:border-slate-800 py-7">
+            className=" bg-white dark:bg-slate-900 text-black dark:text-white border-neutral-200 dark:border-slate-800 py-7"
+            onClick={handleGoClick}>
                 GO!
             </Button>
             </div>

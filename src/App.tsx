@@ -14,7 +14,6 @@ import GamifiedQuizScreen from './screens/student/QuizScreen.jsx';
 import PetSelector from './screens/student/PetSelector.tsx';
 import Onboarding from './screens/student/Onboarding.jsx';
 import EdumonApp from './screens/student/Edumon.tsx';
-
 // Type assertions for JSX files
 const OnboardingComponent = Onboarding as React.ComponentType;
 const QuestDetailComponent = QuestDetailScreen as React.ComponentType;
@@ -27,7 +26,7 @@ const AppContent = () => {
             {/* <RouteIndicator /> */}
             <Routes>
                 {/* Default route redirects to login */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/" element={<Navigate to="/quiz" replace />} />
                 
                 {/* Login route */}
                 <Route path="/login" element={<Login />} />

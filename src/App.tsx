@@ -22,7 +22,7 @@ const AppContent = () => {
             {/* <RouteIndicator /> */}
             <Routes>
                 {/* Default route redirects to onboarding */}
-                <Route path="/" element={<Navigate to="/onboarding" replace />} />
+                <Route path="/" element={<Navigate to="/level-map" replace />} />
                 
                 {/* Onboarding route */}
                 <Route path="/onboarding" element={<OnboardingComponent />} />
@@ -35,6 +35,7 @@ const AppContent = () => {
                 <Route path="/level-map" element={<OptimizedCosmicMap />} />
                 <Route path="/quest-detail" element={<QuestDetailComponent />} />
                 <Route path="/quiz" element={<QuizComponent />} />
+                <Route path="/Edu" element={<EdumonApp />} />
             </Routes>
         </main>
     );

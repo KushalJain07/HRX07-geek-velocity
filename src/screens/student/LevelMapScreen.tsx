@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import gsap from 'gsap'
 import { X, Lock, Star, Zap, Crown, Flame } from 'lucide-react'
 import { BottomTabNav } from "../BottomTab";
+import Header from "../Header"
+import GameHeader from '../Header';
 // import { Home, Trophy, Medal, User } from "lucide-react";
 
 
@@ -280,6 +282,7 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
             className="absolute transform -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${quest.x}%`, top: `${quest.y}%` }}
         >
+
             <motion.div
                 initial={{ scale: 0, rotate: -180, opacity: 0 }}
                 animate={{ scale: 1, rotate: 0, opacity: 1 }}

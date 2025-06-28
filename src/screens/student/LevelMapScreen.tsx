@@ -1,9 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import gsap from 'gsap'
-import { X, Lock, Star, Zap, Crown, Flame, Home, Trophy, Medal, User } from 'lucide-react'
-import { BottomTabNav } from "../BottomTab";
-import GameHeader from "../Header"
+import { X, Lock, Star, Zap, Crown, Flame } from 'lucide-react'
+import GameHeader from '../Header'
 
 // Mock backend data - replace with your actual API call
 const useQuestsData = () => {
@@ -83,19 +82,7 @@ const useQuestsData = () => {
     ])
 
     // Simulate adding new quests from backend
-    interface NewQuest {
-        title: string;
-        description: string;
-        unlocked: boolean;
-        x: number;
-        y: number;
-        constellation: string;
-        difficulty: Difficulty;
-        rewards: string[];
-        estimatedTime: string;
-    }
-
-    const addQuest = useCallback((newQuest: NewQuest) => {
+    const addQuest = useCallback((newQuest) => {
         setQuests(prev => [...prev, { ...newQuest, id: prev.length + 1 }])
     }, [])
 
@@ -135,37 +122,11 @@ const StarField = React.memo(() => {
     )
 })
 
-type Difficulty = 'Novice' | 'Adept' | 'Expert' | 'Master' | 'Legend' | 'Mythic';
-
-type Quest = {
-    id: number;
-    title: string;
-    description: string;
-    unlocked: boolean;
-    x: number;
-    y: number;
-    constellation: string;
-    difficulty: Difficulty;
-    rewards: string[];
-    estimatedTime: string;
-};
-
-interface QuestOrbProps {
-    quest: Quest;
-    onClick: (quest: Quest) => void;
-    index: number;
-}
-
-const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
+const QuestOrb = React.memo(({ quest, onClick, index }) => {
     const orbRef = useRef<HTMLDivElement>(null)
     const glowRef = useRef<HTMLDivElement>(null)
 
-    const difficultyConfig: Record<Difficulty, {
-        gradient: string;
-        glow: string;
-        icon: React.ElementType;
-        ring: string;
-    }> = useMemo(() => ({
+    const difficultyConfig = useMemo(() => ({
         'Novice': {
             gradient: 'from-emerald-400 to-green-600',
             glow: 'emerald-400',
@@ -267,7 +228,6 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
             className="absolute transform -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${quest.x}%`, top: `${quest.y}%` }}
         >
-
             <motion.div
                 initial={{ scale: 0, rotate: -180, opacity: 0 }}
                 animate={{ scale: 1, rotate: 0, opacity: 1 }}
@@ -289,8 +249,8 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
                 <div
                     ref={orbRef}
                     className={`relative w-16 h-16 rounded-full cursor-pointer transition-all duration-200 ${quest.unlocked
-                        ? `bg-gradient-to-br ${config.gradient} shadow-lg hover:shadow-xl`
-                        : 'bg-gradient-to-br from-gray-700 to-gray-900 opacity-50 cursor-not-allowed'
+                            ? `bg-gradient-to-br ${config.gradient} shadow-lg hover:shadow-xl`
+                            : 'bg-gradient-to-br from-gray-700 to-gray-900 opacity-50 cursor-not-allowed'
                         }`}
                     onClick={() => quest.unlocked && onClick(quest)}
                 >
@@ -311,6 +271,7 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
                         {quest.id}
                     </div>
                 </div>
+                <div></div>
 
                 {/* Quest info */}
                 <motion.div
@@ -428,16 +389,7 @@ export default function OptimizedCosmicMap() {
     const { quests, addQuest } = useQuestsData()
     const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
     const [scale, setScale] = useState(1)
-    const containerRef = useRef<HTMLDivElement>(null)
-
-    const [renderedIds, setRenderedIds] = useState(new Set());
-
-    //logic for new quest 
-    useEffect(() => {
-        const newIds = new Set([...renderedIds])
-        quests.forEach(q => newIds.add(q.id))
-        setRenderedIds(newIds)
-    }, [quests])
+    const containerRef = useRef(null)
 
     // Optimized wheel handler
     const handleWheel = useCallback((e: WheelEvent) => {
@@ -471,10 +423,10 @@ export default function OptimizedCosmicMap() {
     }
 
     return (
-        <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-blue-950 via-purple-950 to-blue-950">
+        <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-blue-950 via-purple-900 to-blue-950">
             {/* Background */}
             <StarField />
-            <div className="absolute inset-0 bg-gradient-radial from-transparent via-purple-900/5 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-radial from-transparent via-blue-950 to-slate-900" />
 
             {/* Map container */}
             <motion.div
@@ -522,7 +474,7 @@ export default function OptimizedCosmicMap() {
             </div>
 
             {/* Zoom controls */}
-            <div className="fixed bottom-6 left-6 z-20 flex flex-col gap-2 ">
+            <div className="fixed bottom-6 left-6 z-20 flex flex-col gap-2">
                 <motion.button
                     className="w-12 h-12 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg flex items-center justify-center text-white hover:bg-purple-900/40 transition-all duration-200"
                     onClick={() => setScale(prev => Math.min(2.5, prev * 1.2))}
@@ -540,6 +492,16 @@ export default function OptimizedCosmicMap() {
                     -
                 </motion.button>
             </div>
+
+            {/* Demo add quest button */}
+            <motion.button
+                className="fixed top-4 right-4 z-20 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200"
+                onClick={handleAddQuest}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+            >
+                + Add Quest
+            </motion.button>
 
             {/* Instructions */}
             <div className="fixed bottom-6 right-6 z-20 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg p-3 max-w-xs">

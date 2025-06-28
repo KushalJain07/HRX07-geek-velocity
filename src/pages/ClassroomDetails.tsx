@@ -186,7 +186,7 @@ const ClassroomDetails: React.FC = () => {
         <div className="documents-header">
           <h3>My Documents</h3>
           <button 
-            onClick={() => navigate(`/upload/${id}`)}
+            onClick={() => navigate(`/upload-document/${id}`)}
             className="upload-btn"
           >
             <Plus size={16} />
@@ -219,7 +219,7 @@ const ClassroomDetails: React.FC = () => {
               <h4>No documents uploaded yet</h4>
               <p>Upload your first document to get started</p>
               <button 
-                onClick={() => navigate(`/upload/${id}`)}
+                onClick={() => navigate(`/upload-document/${id}`)}
                 className="upload-first-btn"
               >
                 <Plus size={16} />

@@ -1,72 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getClassrooms, setClassrooms } from './mockData';
-import { ArrowLeft, Settings, Copy, Check, Trash2, Users, Calendar, MapPin, Tag, GraduationCap, BookOpen, Upload, FileText, Plus, Video, Image, File } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getClassrooms, setClassrooms } from "./mockData";
+import {
+  ArrowLeft,
+  Settings,
+  Copy,
+  Check,
+  Trash2,
+  Users,
+  Calendar,
+  MapPin,
+  Tag,
+  GraduationCap,
+  BookOpen,
+  Plus,
+  Eye,
+  X,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
-interface UploadedDocument {
+interface Mission {
   id: number;
-  type: 'video' | 'pdf' | 'doc' | 'image' | 'other';
   title: string;
-  details: string;
-  fileName: string;
-  fileSize: string;
-  uploadDate: string;
+  type: string;
+  typeSubOption: string;
+  typeValue: string;
+  rewardType: string;
+  rewardValue: string;
   classroomId: number;
+  createdAt: string;
 }
 
 const ClassroomDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const classrooms = getClassrooms();
-  const classroom = classrooms.find(c => c.id === Number(id));
+  const classroom = classrooms.find((c) => c.id === Number(id));
   const [showSettings, setShowSettings] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [classCode, setClassCode] = useState('');
-  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
+  const [classCode, setClassCode] = useState("");
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [showCreateMission, setShowCreateMission] = useState(false);
+  const [showViewMissions, setShowViewMissions] = useState(false);
+  const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Generate random 8-digit hexadecimal code
+  // Create Mission form state
+  const [missionTitle, setMissionTitle] = useState("");
+  const [missionType, setMissionType] = useState("");
+  const [quizzesCount, setQuizzesCount] = useState("");
+  const [videosCount, setVideosCount] = useState("");
+  const [watchTime, setWatchTime] = useState("");
+  const [rewardType, setRewardType] = useState("");
+  const [rewardValue, setRewardValue] = useState("");
+
+  // Load persistent class code and missions
   useEffect(() => {
-    const generateCode = () => {
-      const chars = '0123456789ABCDEF';
-      let result = '';
-      for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    };
-    setClassCode(generateCode());
+    // Load or generate persistent class code
+    const storedClassCode = localStorage.getItem(`classCode_${id}`);
+    if (storedClassCode) {
+      setClassCode(storedClassCode);
+    } else {
+      const generateCode = () => {
+        const chars = "0123456789ABCDEF";
+        let result = "";
+        for (let i = 0; i < 8; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      };
+      const newCode = generateCode();
+      setClassCode(newCode);
+      localStorage.setItem(`classCode_${id}`, newCode);
+    }
 
-    // Load uploaded documents for this classroom
-    const allDocs = JSON.parse(localStorage.getItem('uploadedDocuments') || '[]');
-    const classroomDocs = allDocs.filter((doc: UploadedDocument) => doc.classroomId === Number(id));
-    setUploadedDocuments(classroomDocs);
+    // Load persistent missions
+    const storedMissions = localStorage.getItem(`missions_${id}`);
+    if (storedMissions) {
+      try {
+        const parsedMissions = JSON.parse(storedMissions);
+        setMissions(Array.isArray(parsedMissions) ? parsedMissions : []);
+      } catch {
+        setMissions([]);
+        localStorage.removeItem(`missions_${id}`);
+      }
+    } else {
+      setMissions([]);
+    }
+
+    // Mark as initialized after loading data
+    setIsInitialized(true);
   }, [id]);
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'video': return Video;
-      case 'pdf': return FileText;
-      case 'doc': return FileText;
-      case 'image': return Image;
-      default: return File;
+  // Save missions to localStorage whenever missions state changes (only after initialization)
+  useEffect(() => {
+    if (isInitialized) {
+      if (missions.length > 0) {
+        localStorage.setItem(`missions_${id}`, JSON.stringify(missions));
+      } else {
+        localStorage.removeItem(`missions_${id}`);
+      }
     }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'video': return '#ef4444';
-      case 'pdf': return '#dc2626';
-      case 'doc': return '#2563eb';
-      case 'image': return '#059669';
-      default: return '#7c3aed';
-    }
-  };
+  }, [missions, id, isInitialized]);
 
   const handleDelete = () => {
-    const updated = classrooms.filter(c => c.id !== Number(id));
+    const updated = classrooms.filter((c) => c.id !== Number(id));
     setClassrooms(updated);
-    navigate('/dashboard');
+    // Clean up persistent data when class is deleted
+    localStorage.removeItem(`classCode_${id}`);
+    localStorage.removeItem(`missions_${id}`);
+    navigate("/dashboard");
   };
 
   const copyToClipboard = async () => {
@@ -75,15 +120,109 @@ const ClassroomDetails: React.FC = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy: ', err);
+      console.error("Failed to copy: ", err);
     }
+  };
+
+  const createMission = () => {
+    const hasValidTypeValue =
+      (missionType === "quizzes" && quizzesCount.trim()) ||
+      (missionType === "videos" && videosCount.trim()) ||
+      (missionType === "watchtime" && watchTime.trim());
+
+    if (
+      !missionTitle.trim() ||
+      !missionType.trim() ||
+      !hasValidTypeValue ||
+      !rewardType.trim() ||
+      !rewardValue.trim()
+    ) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    const newMission: Mission = {
+      id: Date.now(),
+      title: missionTitle,
+      type: missionType,
+      typeSubOption: missionType,
+      typeValue:
+        missionType === "quizzes"
+          ? quizzesCount
+          : missionType === "videos"
+          ? videosCount
+          : watchTime,
+      rewardType: rewardType,
+      rewardValue: rewardValue,
+      classroomId: Number(id),
+      createdAt: new Date().toISOString(),
+    };
+    const updatedMissions = [...missions, newMission];
+    setMissions(updatedMissions);
+
+    // Reset form and close dropdown
+    setMissionTitle("");
+    setMissionType("");
+    setQuizzesCount("");
+    setVideosCount("");
+    setWatchTime("");
+    setRewardType("");
+    setRewardValue("");
+    setShowCreateMission(false);
+  };
+
+  // Reset sub-options when mission type changes
+  const handleMissionTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setMissionType(e.target.value);
+    // Reset all type values when changing mission type
+    setQuizzesCount("");
+    setVideosCount("");
+    setWatchTime("");
+  };
+
+  // Get reward options
+  const getRewardOptions = () => {
+    return [{ value: "scholar_stones", label: "Scholar Stones" }];
+  };
+
+  const deleteMission = (missionId: number) => {
+    const updatedMissions = missions.filter(
+      (mission) => mission.id !== missionId
+    );
+    setMissions(updatedMissions);
+    setSelectedMission(null);
+  };
+
+  const viewMissions = () => {
+    setShowViewMissions(!showViewMissions);
+    setShowCreateMission(false);
+  };
+
+  const toggleCreateMission = () => {
+    setShowCreateMission(!showCreateMission);
+    setShowViewMissions(false);
   };
 
   if (!classroom) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <div style={{ padding: "2rem", textAlign: "center" }}>
         <h2>Classroom not found</h2>
-        <button onClick={() => navigate('/dashboard')} style={{ marginTop: 20, padding: '0.75rem 1.5rem', background: '#6366f1', color: 'white', border: 'none', borderRadius: '0.75rem', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}>Back to Dashboard</button>
+        <button
+          onClick={() => navigate("/dashboard")}
+          style={{
+            marginTop: 20,
+            padding: "0.75rem 1.5rem",
+            background: "#6366f1",
+            color: "white",
+            border: "none",
+            borderRadius: "0.75rem",
+            fontSize: "1rem",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Back to Dashboard
+        </button>
       </div>
     );
   }
@@ -91,10 +230,12 @@ const ClassroomDetails: React.FC = () => {
   return (
     <div className="classroom-details-container">
       {/* Background Image with Title at Bottom */}
-      <div 
+      <div
         className="classroom-header"
-        style={{ 
-          background: classroom.backgroundGradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        style={{
+          background:
+            classroom.backgroundGradient ||
+            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         }}
       >
         {/* Settings Icon - Top Right */}
@@ -105,7 +246,7 @@ const ClassroomDetails: React.FC = () => {
         >
           <Settings size={24} />
         </button>
-        
+
         {showSettings && (
           <div className="settings-dropdown-top">
             <button className="settings-option">
@@ -124,7 +265,7 @@ const ClassroomDetails: React.FC = () => {
               <Tag size={16} />
               Edit Details
             </button>
-            <button 
+            <button
               className="settings-option delete"
               onClick={() => setShowDeleteConfirm(true)}
             >
@@ -136,7 +277,7 @@ const ClassroomDetails: React.FC = () => {
 
         {/* Back Button - Top Left */}
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate("/dashboard")}
           className="back-btn-top"
           aria-label="Back to Dashboard"
         >
@@ -170,7 +311,7 @@ const ClassroomDetails: React.FC = () => {
           </div>
           <div className="code-display">
             <span className="code-text">{classCode}</span>
-            <button 
+            <button
               onClick={copyToClipboard}
               className="copy-btn"
               aria-label="Copy class code"
@@ -178,55 +319,6 @@ const ClassroomDetails: React.FC = () => {
               {copied ? <Check size={16} /> : <Copy size={16} />}
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Documents Section */}
-      <div className="documents-section">
-        <div className="documents-header">
-          <h3>My Documents</h3>
-          <button 
-            onClick={() => navigate(`/upload-document/${id}`)}
-            className="upload-btn"
-          >
-            <Plus size={16} />
-            Upload Document
-          </button>
-        </div>
-        <div className="documents-grid">
-          {uploadedDocuments.length > 0 ? (
-            uploadedDocuments.map((doc) => {
-              const IconComponent = getTypeIcon(doc.type);
-              return (
-                <div key={doc.id} className="document-card">
-                  <div className="document-icon" style={{ backgroundColor: getTypeColor(doc.type) + '20', color: getTypeColor(doc.type) }}>
-                    <IconComponent size={20} />
-                  </div>
-                  <div className="document-info">
-                    <h4>{doc.title}</h4>
-                    <p>{doc.details}</p>
-                    <span className="document-meta">{doc.fileSize} • {new Date(doc.uploadDate).toLocaleDateString()}</span>
-                  </div>
-                  <button className="document-download">
-                    <Upload size={16} />
-                  </button>
-                </div>
-              );
-            })
-          ) : (
-            <div className="no-documents">
-              <FileText size={48} />
-              <h4>No documents uploaded yet</h4>
-              <p>Upload your first document to get started</p>
-              <button 
-                onClick={() => navigate(`/upload-document/${id}`)}
-                className="upload-first-btn"
-              >
-                <Plus size={16} />
-                Upload First Document
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -248,39 +340,237 @@ const ClassroomDetails: React.FC = () => {
               <GraduationCap size={20} />
             </div>
             <div className="detail-content">
-              <h4>Grade Level</h4>
-              <p>{classroom.gradeLevel || 'Not specified'}</p>
+              <h4>Missions</h4>
+              <p>{missions.length} created</p>
             </div>
+          </div>
+        </div>
+
+        {/* Update Missions Section */}
+        <div className="update-missions-section">
+          <h3>Update Missions</h3>
+          <div className="missions-actions">
+            <button
+              onClick={toggleCreateMission}
+              className="mission-action-btn create"
+            >
+              <Plus size={16} />
+              Create Mission
+              {showCreateMission ? (
+                <ChevronUp size={16} />
+              ) : (
+                <ChevronDown size={16} />
+              )}
+            </button>
+            <button
+              onClick={viewMissions}
+              className={`mission-action-btn view ${
+                missions.length === 0 ? "disabled" : ""
+              }`}
+              disabled={missions.length === 0}
+            >
+              <Eye size={16} />
+              View Missions
+              {showViewMissions ? (
+                <ChevronUp size={16} />
+              ) : (
+                <ChevronDown size={16} />
+              )}
+            </button>
           </div>
 
-          <div className="detail-card">
-            <div className="detail-icon">
-              <Calendar size={20} />
+          {/* Create Mission Dropdown */}
+          {showCreateMission && (
+            <div className="mission-dropdown create-dropdown">
+              <div className="dropdown-header">
+                <h4>Create New Mission</h4>
+                <button
+                  onClick={() => setShowCreateMission(false)}
+                  className="close-btn"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="form-fields">
+                <div className="form-group">
+                  <label>Mission Title</label>
+                  <input
+                    type="text"
+                    value={missionTitle}
+                    onChange={(e) => setMissionTitle(e.target.value)}
+                    placeholder="Enter mission title"
+                    className="form-input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Mission Type</label>
+                  <select
+                    value={missionType}
+                    onChange={handleMissionTypeChange}
+                    className="form-input"
+                  >
+                    <option value="">Select mission type</option>
+                    <option value="quizzes">No. of Quizzes to Complete</option>
+                    <option value="videos">No. of Videos to Watch</option>
+                    <option value="watchtime">Watch Time</option>
+                  </select>
+                </div>
+                {missionType && (
+                  <div className="form-group">
+                    <label>
+                      {missionType === "quizzes" && "Number of Quizzes"}
+                      {missionType === "videos" && "Number of Videos"}
+                      {missionType === "watchtime" && "Watch Time Duration"}
+                    </label>
+                    {missionType === "watchtime" ? (
+                      <input
+                        type="time"
+                        value={watchTime}
+                        onChange={(e) => setWatchTime(e.target.value)}
+                        className="form-input"
+                      />
+                    ) : (
+                      <input
+                        type="number"
+                        value={
+                          missionType === "quizzes" ? quizzesCount : videosCount
+                        }
+                        onChange={(e) => {
+                          if (missionType === "quizzes") {
+                            setQuizzesCount(e.target.value);
+                          } else {
+                            setVideosCount(e.target.value);
+                          }
+                        }}
+                        placeholder={
+                          missionType === "quizzes"
+                            ? "Enter number of quizzes"
+                            : "Enter number of videos"
+                        }
+                        className="form-input"
+                        min="0"
+                      />
+                    )}
+                  </div>
+                )}
+                <div className="form-group">
+                  <label>Reward Type</label>
+                  <select
+                    value={rewardType}
+                    onChange={(e) => setRewardType(e.target.value)}
+                    className="form-input"
+                  >
+                    <option value="">Select reward type</option>
+                    {getRewardOptions().map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {rewardType && (
+                  <div className="form-group">
+                    <label>Reward Value</label>
+                    <input
+                      type="text"
+                      value={rewardValue}
+                      onChange={(e) => setRewardValue(e.target.value)}
+                      placeholder="Enter reward value"
+                      className="form-input"
+                    />
+                  </div>
+                )}
+                <button onClick={createMission} className="submit-btn">
+                  Create Mission
+                </button>
+              </div>
             </div>
-            <div className="detail-content">
-              <h4>Schedule</h4>
-              <p>{classroom.classSchedule || 'Not scheduled'}</p>
-            </div>
-          </div>
+          )}
 
-          <div className="detail-card">
-            <div className="detail-icon">
-              <MapPin size={20} />
+          {/* View Missions Dropdown */}
+          {showViewMissions && (
+            <div className="mission-dropdown view-dropdown">
+              <div className="dropdown-header">
+                <h4>View Missions</h4>
+                <button
+                  onClick={() => setShowViewMissions(false)}
+                  className="close-btn"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="missions-list">
+                {missions.length === 0 ? (
+                  <div className="no-missions">
+                    <p>No missions created yet</p>
+                  </div>
+                ) : (
+                  missions.map((mission) => (
+                    <div key={mission.id} className="mission-item">
+                      <div
+                        className="mission-title"
+                        onClick={() =>
+                          setSelectedMission(
+                            selectedMission?.id === mission.id ? null : mission
+                          )
+                        }
+                      >
+                        <span>{mission.title}</span>
+                        <div className="mission-actions">
+                          {selectedMission?.id === mission.id ? (
+                            <ChevronUp size={16} />
+                          ) : (
+                            <ChevronDown size={16} />
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteMission(mission.id);
+                            }}
+                            className="delete-mission-btn"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                      {selectedMission?.id === mission.id && (
+                        <div className="mission-details">
+                          <div className="detail-row">
+                            <strong>Type:</strong> {mission.type}
+                          </div>
+                          <div className="detail-row">
+                            <strong>Type Details:</strong>{" "}
+                            {mission.typeSubOption} - {mission.typeValue}
+                          </div>
+                          <div className="detail-row">
+                            <strong>Reward:</strong> {mission.rewardType} -{" "}
+                            {mission.rewardValue}
+                          </div>
+                          <div className="detail-row">
+                            <strong>Created:</strong>{" "}
+                            {new Date(mission.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-            <div className="detail-content">
-              <h4>Location</h4>
-              <p>{classroom.classLocation || 'Not specified'}</p>
-            </div>
-          </div>
+          )}
         </div>
 
         {classroom.classTags && (
           <div className="tags-section">
             <h3>Tags</h3>
             <div className="tags-list">
-              {classroom.classTags.split(',').map((tag: string, index: number) => (
-                <span key={index} className="tag">{tag.trim()}</span>
-              ))}
+              {classroom.classTags
+                .split(",")
+                .map((tag: string, index: number) => (
+                  <span key={index} className="tag">
+                    {tag.trim()}
+                  </span>
+                ))}
             </div>
           </div>
         )}
@@ -288,21 +578,24 @@ const ClassroomDetails: React.FC = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Delete Classroom</h3>
-            <p>Are you sure you want to delete "{classroom.title}"? This action cannot be undone.</p>
+            <p>
+              Are you sure you want to delete "{classroom.title}"? This action
+              cannot be undone.
+            </p>
             <div className="modal-actions">
-              <button 
+              <button
                 className="modal-btn secondary"
                 onClick={() => setShowDeleteConfirm(false)}
               >
                 Cancel
               </button>
-              <button 
-                className="modal-btn danger"
-                onClick={handleDelete}
-              >
+              <button className="modal-btn danger" onClick={handleDelete}>
                 Delete Class
               </button>
             </div>
@@ -517,145 +810,6 @@ const ClassroomDetails: React.FC = () => {
           transform: scale(1.05);
         }
 
-        .documents-section {
-          padding: 1rem;
-        }
-
-        .documents-header {
-          background: white;
-          border-radius: 1rem;
-          padding: 1.5rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1rem;
-        }
-
-        .documents-header h3 {
-          margin: 0;
-          color: #1f2937;
-          font-weight: 600;
-        }
-
-        .upload-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: #667eea;
-          color: white;
-          padding: 0.75rem 1.5rem;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          font-weight: 500;
-          transition: background 0.2s;
-        }
-
-        .upload-btn:hover {
-          background: #5a67d8;
-        }
-
-        .documents-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 1rem;
-        }
-
-        .document-card {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-        }
-
-        .document-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .document-info {
-          flex: 1;
-        }
-
-        .document-info h4 {
-          margin: 0 0 0.25rem 0;
-          color: #1f2937;
-          font-weight: 600;
-          font-size: 0.875rem;
-        }
-
-        .document-info p {
-          margin: 0 0 0.25rem 0;
-          color: #6b7280;
-          font-size: 0.75rem;
-          line-height: 1.4;
-        }
-
-        .document-meta {
-          color: #9ca3af;
-          font-size: 0.7rem;
-        }
-
-        .document-download {
-          background: none;
-          border: none;
-          color: #667eea;
-          cursor: pointer;
-          padding: 0.5rem;
-          border-radius: 0.25rem;
-          transition: background 0.2s;
-        }
-
-        .document-download:hover {
-          background: #f3f4f6;
-        }
-
-        .no-documents {
-          grid-column: 1 / -1;
-          text-align: center;
-          padding: 3rem 2rem;
-          background: white;
-          border-radius: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          color: #6b7280;
-        }
-
-        .no-documents h4 {
-          margin: 1rem 0 0.5rem 0;
-          color: #374151;
-          font-weight: 600;
-        }
-
-        .no-documents p {
-          margin: 0 0 1.5rem 0;
-        }
-
-        .upload-first-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: #667eea;
-          color: white;
-          padding: 0.75rem 1.5rem;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          font-weight: 500;
-          transition: background 0.2s;
-        }
-
-        .upload-first-btn:hover {
-          background: #5a67d8;
-        }
-
         .class-details {
           padding: 1rem;
         }
@@ -727,6 +881,260 @@ const ClassroomDetails: React.FC = () => {
           border-radius: 2rem;
           font-size: 0.875rem;
           font-weight: 500;
+        }
+
+        .update-missions-section {
+          background: white;
+          border-radius: 1rem;
+          padding: 1.5rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          margin-bottom: 1.5rem;
+        }
+
+        .update-missions-section h3 {
+          margin: 0 0 1rem 0;
+          color: #1f2937;
+          font-weight: 600;
+        }
+
+        .missions-actions {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .mission-action-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.5rem;
+          border: none;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.2s;
+          flex: 1;
+        }
+
+        .mission-action-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .mission-action-btn.create {
+          background: #10b981;
+          color: white;
+        }
+
+        .mission-action-btn.create:hover {
+          background: #059669;
+        }
+
+        .mission-action-btn.view {
+          background: #667eea;
+          color: white;
+        }
+
+        .mission-action-btn.view:hover {
+          background: #5a67d8;
+        }
+
+        .mission-action-btn.disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          background: #9ca3af;
+        }
+
+        .mission-action-btn.disabled:hover {
+          background: #9ca3af;
+          transform: none;
+        }
+
+        /* Mission Dropdowns */
+        .mission-dropdown {
+          margin-top: 1rem;
+          background: white;
+          border-radius: 0.75rem;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+          animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+            max-height: 0;
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 500px;
+          }
+        }
+
+        .dropdown-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem 1.5rem;
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .dropdown-header h4 {
+          margin: 0;
+          color: #1f2937;
+          font-weight: 600;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          color: #6b7280;
+          cursor: pointer;
+          padding: 0.25rem;
+          border-radius: 0.25rem;
+          transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+          background: #e5e7eb;
+          color: #374151;
+        }
+
+        /* Create Mission Form */
+        .form-fields {
+          padding: 1.5rem;
+        }
+
+        .form-group {
+          margin-bottom: 1rem;
+        }
+
+        .form-group label {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: #374151;
+          font-weight: 500;
+          font-size: 0.875rem;
+        }
+
+        .form-input {
+          width: 100%;
+          padding: 0.75rem;
+          border: 2px solid #e5e7eb;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+          transition: all 0.2s;
+        }
+
+        .form-input:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+          width: 100%;
+          padding: 0.75rem;
+          background: #10b981;
+          color: white;
+          border: none;
+          border-radius: 0.5rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+          margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+          background: #059669;
+          transform: translateY(-1px);
+        }
+
+        /* View Missions List */
+        .missions-list {
+          padding: 1.5rem;
+        }
+
+        .no-missions {
+          text-align: center;
+          color: #6b7280;
+          padding: 2rem;
+        }
+
+        .mission-item {
+          border: 1px solid #e5e7eb;
+          border-radius: 0.5rem;
+          margin-bottom: 0.75rem;
+          overflow: hidden;
+          transition: all 0.2s;
+        }
+
+        .mission-item:hover {
+          border-color: #667eea;
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        .mission-title {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem;
+          background: #f8fafc;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .mission-title:hover {
+          background: #f1f5f9;
+        }
+
+        .mission-title span {
+          font-weight: 500;
+          color: #1f2937;
+        }
+
+        .mission-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .delete-mission-btn {
+          background: #ef4444;
+          color: white;
+          border: none;
+          border-radius: 0.25rem;
+          padding: 0.25rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .delete-mission-btn:hover {
+          background: #dc2626;
+          transform: scale(1.1);
+        }
+
+        .mission-details {
+          padding: 1rem;
+          background: white;
+          border-top: 1px solid #e5e7eb;
+          animation: slideDown 0.2s ease-out;
+        }
+
+        .detail-row {
+          margin-bottom: 0.5rem;
+          font-size: 0.875rem;
+          color: #4b5563;
+        }
+
+        .detail-row:last-child {
+          margin-bottom: 0;
+        }
+
+        .detail-row strong {
+          color: #1f2937;
         }
 
         .modal-overlay {
@@ -842,30 +1250,18 @@ const ClassroomDetails: React.FC = () => {
             font-size: 1.25rem;
           }
 
-          .documents-header {
-            flex-direction: column;
-            gap: 1rem;
-            text-align: center;
-          }
-
-          .documents-grid {
-            grid-template-columns: 1fr;
-          }
-
           .details-grid {
             grid-template-columns: 1fr;
           }
 
           .description-section-top,
           .class-code-section,
-          .documents-section,
           .class-details {
             margin: 0.5rem;
             padding: 0.5rem;
           }
 
           .code-container,
-          .documents-header,
           .detail-card,
           .tags-section {
             padding: 1rem;
@@ -886,10 +1282,6 @@ const ClassroomDetails: React.FC = () => {
             letter-spacing: 1px;
           }
 
-          .document-card {
-            padding: 0.75rem;
-          }
-
           .detail-card {
             padding: 1rem;
           }
@@ -899,4 +1291,4 @@ const ClassroomDetails: React.FC = () => {
   );
 };
 
-export default ClassroomDetails; 
+export default ClassroomDetails;

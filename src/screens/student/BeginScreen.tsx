@@ -2,11 +2,13 @@
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom';
 
 export default function EnterCodeScreen() {
     const inputRefs = useRef<Array<HTMLInputElement | null>>([])
     const [displayedText, setDisplayedText] = useState('')
     const fullText = "Start your own epic Journey"
+    const navigate = useNavigate();
 
     // Typewriter animation
     useEffect(() => {
@@ -21,7 +23,6 @@ export default function EnterCodeScreen() {
         }, 80)
         return () => clearInterval(interval)
     }, [])
-
 
     const handleInput = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -41,6 +42,12 @@ export default function EnterCodeScreen() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7 }}
         >
+            <button
+                onClick={() => navigate('/')}
+                style={{ position: 'absolute', top: 20, right: 20, background: '#fff', color: '#22223b', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+            >
+                Log out
+            </button>
             <motion.h1
                 className="text-3xl md:text-4xl font-extrabold text-center mb-8 bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-600 bg-clip-text text-transparent drop-shadow-lg"
                 initial={{ opacity: 0 }}
@@ -62,7 +69,7 @@ export default function EnterCodeScreen() {
                         key={i}
                         type="text"
                         maxLength={1}
-                        ref={(el) => (inputRefs.current[i] = el)}
+                        ref={(el) => { inputRefs.current[i] = el; }}
                         onChange={(e) => handleInput(e, i)}
                         className="w-12 h-14 md:w-14 md:h-16 text-center text-xl font-bold rounded-lg border border-white/20 bg-white/10 text-white backdrop-blur-md shadow-lg shadow-blue-400/10 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all duration-200"
                         whileFocus={{ scale: 1.1 }}

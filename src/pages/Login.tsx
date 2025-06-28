@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/commonStyles.css';
 import teacherImg from '../assets/teacher.png';
 import iconImg from '../assets/icon.png';
@@ -8,6 +9,7 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +18,11 @@ const Login: React.FC = () => {
       return;
     }
     setError('');
-    alert(`Logged in as ${email} (${role})`);
+    if (role === 'Student') {
+      navigate('/levelmap');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   return (

@@ -1,485 +1,679 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Zap,
+  Edit3,
+  Check,
+  X,
+  Lock,
+} from "lucide-react";
 
-// import { BottomTabNav } from '../BottomTab'
-// Define Button and Card components locally since we can't import them
-const Button = ({
-  children,
-  onClick,
-  variant = "default",
-  className = "",
-  ...props
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  variant?: "default" | "destructive" | "outline";
-  className?: string;
-  [key: string]: any;
-}) => {
-  const baseClasses =
-    "px-4 py-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+const EduMonApp = () => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const [editingName, setEditingName] = useState<number | null>(null);
+  const [tempName, setTempName] = useState("");
+  const [brainBerries, setBrainBerries] = useState(10000000);
+  const [xp, setXp] = useState(2500);
+  const [showEvolutionAnimation, setShowEvolutionAnimation] = useState(false);
 
-  const variantClasses = {
-    default:
-      "bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500",
-    destructive:
-      "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
-    outline:
-      "border border-gray-300 bg-transparent hover:bg-gray-50 focus-visible:ring-gray-500",
-  };
-
-  return (
-    <button
-      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
-      onClick={onClick}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-const Card = ({
-  children,
-  className = "",
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
-}) => {
-  return (
-    <div
-      className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-
-const CardHeader = ({
-  children,
-  className = "",
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
-}) => {
-  return (
-    <div className={`flex flex-col space-y-1.5 p-6 ${className}`} {...props}>
-      {children}
-    </div>
-  );
-};
-
-const CardTitle = ({
-  children,
-  className = "",
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
-}) => {
-  return (
-    <h3
-      className={`text-2xl font-semibold leading-none tracking-tight ${className}`}
-      {...props}
-    >
-      {children}
-    </h3>
-  );
-};
-
-const CardContent = ({
-  children,
-  className = "",
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
-}) => {
-  return (
-    <div className={`p-6 pt-0 ${className}`} {...props}>
-      {children}
-    </div>
-  );
-};
-
-type Pet = {
-  id: number;
-  name: string;
-  type: string;
-  color: string;
-  element: string;
-};
-
-export default function PetSelector() {
-  const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [confirmedPet, setConfirmedPet] = useState<Pet | null>(null);
-  const navigate = useNavigate();
-
-  const pets: Pet[] = [
+  // Edumon data structure with unlock system
+  const [edumonData, setEdumonData] = useState([
     {
       id: 1,
-      name: "Blaze",
-      type: "Fire Fox",
-      color: "bg-orange-500",
-      element: "🔥",
+      evolutionStage: 0,
+      customName: "",
+      defaultNames: ["Flame Starter", "Flame Guardian", "Flame Master"],
+      images: [
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Flame%201BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Flame%202BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Flame%203BG.jpg",
+      ],
+      elements: ["🔥"],
+      bgColors: [
+        "from-red-500 to-orange-600",
+        "from-red-600 to-orange-700",
+        "from-red-700 to-orange-800",
+      ],
+      unlocked: true,
     },
     {
       id: 2,
-      name: "Splash",
-      type: "Water Otter",
-      color: "bg-blue-500",
-      element: "💧",
+      evolutionStage: 0,
+      customName: "",
+      defaultNames: ["Aqua Sprout", "Aqua Defender", "Aqua Champion"],
+      images: [
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Water%201BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Water%202BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Water%203BG.jpg",
+      ],
+      elements: ["💧"],
+      bgColors: [
+        "from-blue-500 to-cyan-600",
+        "from-blue-600 to-cyan-700",
+        "from-blue-700 to-cyan-800",
+      ],
+      unlocked: false,
     },
     {
       id: 3,
-      name: "Leaf",
-      type: "Grass Rabbit",
-      color: "bg-green-500",
-      element: "🌿",
+      evolutionStage: 0,
+      customName: "",
+      defaultNames: ["Nature Seed", "Nature Warrior", "Nature Lord"],
+      images: [
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Grass%201BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Grass%202BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Grass%203BG.jpg",
+      ],
+      elements: ["🌱"],
+      bgColors: [
+        "from-green-500 to-emerald-600",
+        "from-green-600 to-emerald-700",
+        "from-green-700 to-emerald-800",
+      ],
+      unlocked: false,
     },
     {
       id: 4,
-      name: "Spark",
-      type: "Electric Mouse",
-      color: "bg-yellow-500",
-      element: "⚡",
+      evolutionStage: 0,
+      customName: "",
+      defaultNames: ["Spark Tiny", "Spark Bolt", "Spark Thunder"],
+      images: [
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Thunder%201BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Thunder%202BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Thunder%203BG.jpg",
+      ],
+      elements: ["⚡"],
+      bgColors: [
+        "from-yellow-400 to-amber-500",
+        "from-yellow-500 to-amber-600",
+        "from-yellow-600 to-amber-700",
+      ],
+      unlocked: false,
     },
     {
       id: 5,
-      name: "Rocky",
-      type: "Stone Turtle",
-      color: "bg-gray-500",
-      element: "🪨",
+      evolutionStage: 0,
+      customName: "",
+      defaultNames: ["Stone Pebble", "Stone Boulder", "Stone Titan"],
+      images: [
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Stone%201BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Stone%202BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Stone%203BG.jpg",
+      ],
+      elements: ["🪨"],
+      bgColors: [
+        "from-stone-500 to-gray-700",
+        "from-stone-600 to-gray-800",
+        "from-stone-700 to-gray-900",
+      ],
+      unlocked: false,
     },
     {
       id: 6,
-      name: "Twinkle",
-      type: "Fairy Cat",
-      color: "bg-purple-500",
-      element: "✨",
+      evolutionStage: 0,
+      customName: "",
+      defaultNames: ["Wind Breeze", "Wind Gale", "Wind Storm"],
+      images: [
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Wind%201BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Wind%202BG.jpg",
+        "https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Wind%203BG.jpg",
+      ],
+      elements: ["☁️"],
+      bgColors: [
+        "from-sky-400 to-blue-500",
+        "from-sky-500 to-blue-600",
+        "from-sky-600 to-blue-700",
+      ],
+      unlocked: false,
     },
-  ];
+  ]);
 
-  const handleSelectPet = (pet: Pet) => {
-    setSelectedPet(pet);
-    setShowConfirmation(true);
+  // Evolution costs and rewards
+  const getEvolutionCost = (currentStage: number) => {
+    if (currentStage === 0) return 25000;
+    if (currentStage === 1) return 50000;
+    return 0;
   };
 
-  const confirmSelection = () => {
-    setConfirmedPet(selectedPet);
-    setShowConfirmation(false);
-    setShowCelebration(true);
-    setTimeout(() => setShowCelebration(false), 5000);
+  const getXpReward = (currentStage: number) => {
+    if (currentStage === 0) return 500;
+    if (currentStage === 1) return 1000;
+    return 0;
   };
 
-  const cancelSelection = () => {
-    setSelectedPet(null);
-    setShowConfirmation(false);
+  const canAffordEvolution = (currentStage: number) => {
+    return brainBerries >= getEvolutionCost(currentStage);
   };
 
-  const handleBackToOnboarding = () => {
-    console.log("⬅️ Going back to Onboarding");
-    console.log("📍 Current route: /pet-selector");
-    console.log("🎯 Target route: /onboarding");
-    navigate("/onboarding");
+  const unlockNextEdumon = (currentEdumonIndex: number) => {
+    const nextIndex = currentEdumonIndex + 1;
+    if (nextIndex < edumonData.length) {
+      setEdumonData((prev) =>
+        prev.map((edumon, index) =>
+          index === nextIndex ? { ...edumon, unlocked: true } : edumon
+        )
+      );
+    }
   };
 
-  const handleContinueJourney = () => {
-    // Navigate to the begin screen after pet selection
-    console.log("🎮 Continuing journey with pet:", confirmedPet?.name);
-    console.log("📍 Current route: /pet-selector");
-    console.log("🎯 Target route: /enter-code");
-    navigate('/enter-code');
+  const handleEvolution = (edumonId: number) => {
+    const edumon = edumonData.find((e) => e.id === edumonId);
+    const edumonIndex = edumonData.findIndex((e) => e.id === edumonId);
+
+    if (!edumon || !edumon.unlocked) return;
+
+    const cost = getEvolutionCost(edumon.evolutionStage);
+    const xpReward = getXpReward(edumon.evolutionStage);
+
+    if (
+      edumon.evolutionStage < 2 &&
+      canAffordEvolution(edumon.evolutionStage)
+    ) {
+      setBrainBerries((prev) => prev - cost);
+      setXp((prev) => prev + xpReward);
+
+      setShowEvolutionAnimation(true);
+      setTimeout(() => setShowEvolutionAnimation(false), 3000);
+
+      setEdumonData((prev) =>
+        prev.map((e) =>
+          e.id === edumonId ? { ...e, evolutionStage: e.evolutionStage + 1 } : e
+        )
+      );
+
+      if (edumon.evolutionStage === 1) {
+        setTimeout(() => {
+          unlockNextEdumon(edumonIndex);
+        }, 1000);
+      }
+    }
+  };
+
+  const startEditingName = (edumonId: number) => {
+    const edumon = edumonData.find((e) => e.id === edumonId);
+    if (!edumon?.unlocked) return;
+
+    setEditingName(edumonId);
+    setTempName(
+      edumon.customName || edumon.defaultNames[edumon.evolutionStage]
+    );
+  };
+
+  const saveCustomName = (edumonId: number) => {
+    setEdumonData((prev) =>
+      prev.map((edumon) =>
+        edumon.id === edumonId
+          ? { ...edumon, customName: tempName.trim() }
+          : edumon
+      )
+    );
+    setEditingName(null);
+    setTempName("");
+  };
+
+  const cancelEditingName = () => {
+    setEditingName(null);
+    setTempName("");
+  };
+
+  const nextPage = () => {
+    setCurrentPage((prev) => (prev + 1) % edumonData.length);
+  };
+
+  const prevPage = () => {
+    setCurrentPage(
+      (prev) => (prev - 1 + edumonData.length) % edumonData.length
+    );
+  };
+
+  const currentEdumon = edumonData[currentPage];
+  const currentName =
+    currentEdumon.customName ||
+    currentEdumon.defaultNames[currentEdumon.evolutionStage];
+  const currentImage = currentEdumon.images[currentEdumon.evolutionStage];
+  const currentBgColor = currentEdumon.bgColors[currentEdumon.evolutionStage];
+  const evolutionStageNames = ["Basic", "Advanced", "Master"];
+  const canEvolve =
+    currentEdumon.evolutionStage < 2 &&
+    canAffordEvolution(currentEdumon.evolutionStage) &&
+    currentEdumon.unlocked;
+  const isLocked = !currentEdumon.unlocked;
+
+  // Animation Components
+  const PopperCelebration = () => {
+    if (!showEvolutionAnimation) return null;
+
+    const colors = [
+      "#FFD700",
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#96CEB4",
+      "#FFEAA7",
+      "#DDA0DD",
+      "#98D8C8",
+    ];
+
+    return (
+      <div className="fixed inset-0 pointer-events-none z-50">
+        {[...Array(12)].map((_, i) => {
+          const startX = 20 + Math.random() * 60;
+          const color = colors[i % colors.length];
+
+          return (
+            <div
+              key={`popper-${i}`}
+              className="absolute w-3 h-3 rounded-full animate-bounce"
+              style={{
+                left: `${startX}%`,
+                bottom: "10%",
+                backgroundColor: color,
+                animationDelay: `${Math.random() * 0.8}s`,
+                animationDuration: `${2.5 + Math.random() * 1}s`,
+              }}
+            />
+          );
+        })}
+
+        <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="bg-gradient-to-r from-emerald-500/90 to-teal-500/90 backdrop-blur-md rounded-2xl px-8 py-4 border border-white/30 shadow-2xl animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="text-2xl">🎉</div>
+              <div>
+                <p className="text-white font-bold text-lg">
+                  Evolution Complete!
+                </p>
+                <p className="text-white/80 text-sm">
+                  Your Edumon has grown stronger
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const CardSparkle = () => {
+    if (!showEvolutionAnimation) return null;
+
+    return (
+      <div className="absolute -top-1 -right-1 pointer-events-none">
+        <div className="w-6 h-6 text-yellow-300 opacity-70 animate-pulse">
+          ✨
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 overflow-hidden relative bg-gradient-to-br from-[#4306bc] via-[#7f53ac] to-[#1e1a3c]">
-      {/* Back Button */}
-      <motion.button
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3 }}
-        onClick={handleBackToOnboarding}
-        className="absolute top-6 left-6 z-30 flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg text-white hover:bg-white/30 transition-all duration-200 border border-white/30"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Onboarding
-      </motion.button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+      <PopperCelebration />
 
-      
+      {/* Currency Bars - Top Right */}
+      <div className="fixed top-6 right-6 z-40 space-y-3">
+        {/* Brain Berries Bar */}
+        <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl px-6 py-3 border border-orange-400/30 backdrop-blur-md shadow-xl">
+          <div className="flex items-center gap-3">
+            <img
+              src="https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Brain%20Berries.png"
+              alt="Brain Berry"
+              className="w-8 h-8 rounded-full object-cover"
+            />
+            <span className="text-white font-bold text-lg">
+              {brainBerries.toLocaleString()}
+            </span>
+          </div>
+        </div>
 
-      {/* Grand Hall Gradient Background (no image) */}
+        {/* XP Bar */}
+        <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl px-6 py-3 border border-purple-400/30 backdrop-blur-md shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
+              XP
+            </div>
+            <span className="text-white font-bold text-lg">
+              {xp.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
 
-      {/* Pillars */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.3 }}
-        className="absolute left-0 top-0 h-full w-32 bg-gradient-to-r from-yellow-900 to-transparent"
-      />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.3 }}
-        className="absolute right-0 top-0 h-full w-32 bg-gradient-to-l from-yellow-900 to-transparent"
-      />
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-transparent bg-clip-text mb-3">
+          <h1 className="text-5xl font-bold drop-shadow-2xl">
+            ⚡ EDUMON COLLECTION ⚡
+          </h1>
+        </div>
+        <p className="text-slate-300 text-lg mb-6">
+          Master the Elements • Evolve Your Knowledge
+        </p>
 
-      {/* Floating Flames */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{ y: 0, scale: 1, opacity: 0.85 }}
-          animate={{
-            y: [0, -18, 0],
-            scale: [1, 1.08, 1],
-            opacity: [0.85, 1, 0.85],
-          }}
-          transition={{
-            duration: 2.5 + Math.random() * 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className={`absolute z-20 ${
-            i % 2 === 0 ? "left-8" : "right-8"
-          } top-[${8 + i * 10}%] flex flex-col items-center`}
+        <div className="flex justify-center items-center">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-3">
+            <span className="text-white font-semibold text-lg">
+              {currentPage + 1} of {edumonData.length}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Edumon Card */}
+      <div className="max-w-lg mx-auto">
+        <div
+          className={`bg-gradient-to-br ${
+            isLocked ? "from-gray-600 to-gray-800" : currentBgColor
+          } rounded-3xl shadow-2xl border border-white/20 backdrop-blur-sm p-8 transform transition-all duration-500 hover:scale-105 ${
+            showEvolutionAnimation ? "ring-4 ring-yellow-300/50" : ""
+          } ${isLocked ? "opacity-75" : ""}`}
         >
-          {/* Flame body */}
-          <div
-            className="w-4 h-8 rounded-full bg-gradient-to-t from-yellow-400 via-orange-500 to-yellow-200 shadow-lg animate-flicker"
-            style={{ filter: "blur(0.5px)" }}
-          />
-          {/* Flame glow */}
-          <div className="w-6 h-3 rounded-full bg-yellow-300 opacity-60 blur-sm -mt-2" />
-        </motion.div>
-      ))}
-
-      {/* Main Content */}
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-4xl"
-      >
-        <Card className="bg-white/90 backdrop-blur-sm border-2 border-yellow-400 shadow-xl">
-          <CardHeader>
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-center"
-            >
-              <CardTitle className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-purple-600">
-                GRAND PET SELECTION CEREMONY
-              </CardTitle>
-              <p className="text-lg text-gray-600 mt-2 font-medium">
-                Choose your eternal companion wisely
-              </p>
-            </motion.div>
-          </CardHeader>
-
-          <CardContent>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="grid grid-cols-2 md:grid-cols-3 gap-6"
-            >
-              {pets.map((pet) => (
-                <motion.div
-                  key={pet.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex flex-col items-center"
-                >
-                  <motion.div
-                    className={`w-36 h-36 rounded-full ${
-                      pet.color
-                    } flex items-center justify-center mb-3 relative overflow-hidden border-4 border-yellow-300 shadow-lg ${
-                      selectedPet?.id === pet.id ? "ring-4 ring-yellow-400" : ""
-                    }`}
-                    animate={{
-                      scale: selectedPet?.id === pet.id ? [1, 1.1, 1] : 1,
-                    }}
-                    transition={{
-                      duration: selectedPet?.id === pet.id ? 1 : 0.3,
-                      repeat: selectedPet?.id === pet.id ? Infinity : 0,
-                    }}
+          {/* Edumon Name Section */}
+          <div className="text-center mb-8">
+            {isLocked ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-3">
+                  <Lock size={24} className="text-gray-400" />
+                  <h2 className="text-3xl font-bold text-gray-400 drop-shadow-lg">
+                    Locked
+                  </h2>
+                  <Lock size={24} className="text-gray-400" />
+                </div>
+                <div className="bg-gray-500/20 backdrop-blur-sm border border-gray-500/30 rounded-xl px-4 py-2 mx-auto w-fit">
+                  <span className="text-gray-400 font-semibold">
+                    Complete previous EduMon to unlock
+                  </span>
+                </div>
+              </div>
+            ) : editingName === currentEdumon.id ? (
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  className="w-full bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 text-white text-xl font-bold text-center placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  placeholder="Enter custom name..."
+                  maxLength={20}
+                />
+                <div className="flex justify-center gap-3">
+                  <button
+                    onClick={() => saveCustomName(currentEdumon.id)}
+                    className="bg-green-500/80 hover:bg-green-500 text-white p-2 rounded-lg transition-all duration-200"
                   >
-                    <div className="absolute inset-0 bg-white/20 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-                    <div className="bg-gray-200 border-2 border-dashed rounded-xl w-20 h-20 flex items-center justify-center text-4xl">
-                      {pet.element}
+                    <Check size={20} />
+                  </button>
+                  <button
+                    onClick={cancelEditingName}
+                    className="bg-red-500/80 hover:bg-red-500 text-white p-2 rounded-lg transition-all duration-200"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-3">
+                  <h2 className="text-3xl font-bold text-white drop-shadow-lg">
+                    {currentName}
+                  </h2>
+                  <button
+                    onClick={() => startEditingName(currentEdumon.id)}
+                    className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-lg transition-all duration-200 hover:scale-110"
+                    title="Edit name"
+                  >
+                    <Edit3 size={18} />
+                  </button>
+                </div>
+
+                <div className="flex justify-center items-center gap-3">
+                  <div className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-2">
+                    <span className="text-white font-semibold">
+                      {evolutionStageNames[currentEdumon.evolutionStage]}
+                    </span>
+                  </div>
+                  {currentEdumon.evolutionStage > 0 && (
+                    <div className="bg-gradient-to-r from-yellow-400/20 to-orange-500/20 backdrop-blur-sm border border-yellow-400/30 rounded-xl px-4 py-2">
+                      <span className="text-yellow-200 font-semibold">
+                        {currentEdumon.evolutionStage === 2
+                          ? "👑 Master"
+                          : "✨ Evolved"}
+                      </span>
                     </div>
-                  </motion.div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
-                  <Button
-                    variant="outline"
-                    className={`w-full border-2 font-bold ${
-                      selectedPet?.id === pet.id
-                        ? "border-yellow-500 bg-yellow-50"
-                        : "border-gray-300"
-                    } transition-all duration-300`}
-                    onClick={() => handleSelectPet(pet)}
-                  >
-                    {pet.name}
-                    <span className="ml-2 text-xs opacity-70">{pet.type}</span>
-                  </Button>
-                </motion.div>
-              ))}
-            </motion.div>
+          {/* Edumon Image */}
+          <div className="relative mb-8">
+            <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl p-6 mx-auto w-fit">
+              <div className="relative">
+                <img
+                  src={currentImage}
+                  alt={currentName}
+                  className={`w-52 h-52 object-cover rounded-2xl shadow-2xl transition-all duration-500 ${
+                    isLocked ? "grayscale blur-sm" : ""
+                  }`}
+                />
 
-            {/* Confirmation Dialog */}
-            <AnimatePresence>
-              {showConfirmation && selectedPet && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
-                >
-                  <motion.div
-                    className={`bg-white p-6 rounded-xl max-w-md w-full border-4 ${selectedPet.color} border-opacity-50 shadow-2xl`}
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                  >
-                    <h3 className="text-2xl font-bold text-center mb-4">
-                      Confirm Your Selection
-                    </h3>
-                    <div className="flex items-center justify-center mb-6">
+                {/* Lock Overlay */}
+                {isLocked && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
+                    <div className="bg-gray-800/90 rounded-full p-6 border-4 border-gray-600">
+                      <Lock size={48} className="text-gray-300" />
+                    </div>
+                  </div>
+                )}
+
+                <CardSparkle />
+                {!isLocked && currentEdumon.evolutionStage === 2 && (
+                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-3 animate-pulse shadow-xl">
+                    <span className="text-xl">👑</span>
+                  </div>
+                )}
+                {!isLocked && currentEdumon.evolutionStage === 1 && (
+                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-3 animate-pulse shadow-xl">
+                    <span className="text-xl">✨</span>
+                  </div>
+                )}
+
+                {/* Evolution Stage Indicators */}
+                {!isLocked && (
+                  <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2">
+                    {[0, 1, 2].map((stage) => (
                       <div
-                        className={`w-24 h-24 rounded-full ${selectedPet.color} flex items-center justify-center border-4 border-yellow-300 mr-4`}
-                      >
-                        <div className="bg-gray-200 border-2 border-dashed rounded-xl w-12 h-12 flex items-center justify-center text-2xl">
-                          {selectedPet.element}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="font-bold text-lg">{selectedPet.name}</p>
-                        <p className="text-gray-600">{selectedPet.type}</p>
-                      </div>
-                    </div>
-                    <p className="text-center mb-6">
-                      Are you sure you want to select {selectedPet.name} as your
-                      eternal companion?
-                    </p>
-                    <div className="flex gap-4 justify-center">
-                      <Button
-                        variant="destructive"
-                        onClick={cancelSelection}
-                        className="px-6"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={confirmSelection}
-                        className={`${selectedPet.color} hover:${selectedPet.color}/90 px-6 text-white`}
-                      >
-                        Confirm
-                      </Button>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                        key={stage}
+                        className={`w-4 h-4 rounded-full transition-all duration-300 border-2 ${
+                          stage <= currentEdumon.evolutionStage
+                            ? "bg-gradient-to-r from-yellow-400 to-orange-500 border-white shadow-lg scale-110"
+                            : "bg-white/20 border-white/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
-            {/* Celebration */}
-            <AnimatePresence>
-              {showCelebration && confirmedPet && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
+          {/* Elements */}
+          <div className="text-center mb-8">
+            <p
+              className={`mb-3 font-medium text-lg ${
+                isLocked ? "text-gray-400" : "text-white/80"
+              }`}
+            >
+              Element Mastery
+            </p>
+            <div className="flex justify-center gap-3">
+              {currentEdumon.elements.map((element, index) => (
+                <div
+                  key={index}
+                  className={`backdrop-blur-md border rounded-2xl w-16 h-16 flex items-center justify-center text-3xl transition-transform duration-300 shadow-lg ${
+                    isLocked
+                      ? "bg-gray-500/15 border-gray-500/25 grayscale"
+                      : "bg-white/15 border-white/25 hover:scale-110"
+                  }`}
                 >
-                  <motion.div
-                    initial={{ scale: 0.5 }}
-                    animate={{ scale: 1 }}
-                    className={`bg-gradient-to-br from-white to-gray-100 p-8 rounded-xl max-w-md w-full border-4 ${confirmedPet.color} border-opacity-50 shadow-2xl text-center`}
-                  >
-                    <motion.div
-                      animate={{
-                        scale: [1, 1.2, 1],
-                        rotate: [0, 10, -10, 0],
-                      }}
-                      transition={{
-                        duration: 0.5,
-                        repeat: 3,
-                      }}
-                    >
-                      <Sparkles className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
-                    </motion.div>
-                    <h3 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-purple-600">
-                      CONGRATULATIONS!
-                    </h3>
-                    <p className="text-xl mb-2">
-                      You've chosen{" "}
-                      <span className="font-bold">{confirmedPet.name}</span>!
-                    </p>
-                    <p className="text-gray-600 mb-6">
-                      The {confirmedPet.type} will be your loyal companion.
-                    </p>
-                    <div
-                      className={`w-32 h-32 rounded-full ${confirmedPet.color} flex items-center justify-center mx-auto mb-6 border-4 border-yellow-300 shadow-lg`}
-                    >
-                      <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 flex items-center justify-center text-3xl">
-                        {confirmedPet.element}
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleContinueJourney}
-                      className="px-8 py-2"
-                    >
-                      Begin Your Journey
-                    </Button>
-                  </motion.div>
+                  {element}
+                </div>
+              ))}
+            </div>
+          </div>
 
-                  {/* Confetti */}
-                  {[...Array(50)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{
-                        x: Math.random() * 100 - 50,
-                        y: Math.random() * 100 - 50,
-                        opacity: 0,
-                      }}
-                      animate={{
-                        y: [0, -1000],
-                        opacity: [1, 0],
-                        rotate: Math.random() * 360,
-                      }}
-                      transition={{
-                        duration: 3,
-                        delay: Math.random() * 0.5,
-                      }}
-                      className={`absolute text-2xl ${
-                        Math.random() > 0.5
-                          ? "text-yellow-400"
-                          : "text-purple-400"
-                      }`}
-                      style={{
-                        left: `${Math.random() * 100}%`,
-                        bottom: 0,
-                      }}
-                    >
-                      {Math.random() > 0.5 ? "✦" : "✧"}
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
-        {/* <BottomTabNav /> */}
-      </motion.div>
+          {/* Evolution Cost Display */}
+          {!isLocked && currentEdumon.evolutionStage < 2 && (
+            <div className="text-center mb-6">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4">
+                <p className="text-white/80 mb-2">Evolution Cost</p>
+                <div className="flex items-center justify-center gap-2">
+                  <img
+                    src="https://raw.githubusercontent.com/rutviktayde/EduMon-IMGs/main/Brain%20Berries.png"
+                    alt="Brain Berry"
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                  <span
+                    className={`font-bold text-lg ${
+                      canAffordEvolution(currentEdumon.evolutionStage)
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {getEvolutionCost(
+                      currentEdumon.evolutionStage
+                    ).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-white/60 text-sm mt-2">
+                  +{getXpReward(currentEdumon.evolutionStage)} XP
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <button
+                onClick={() => handleEvolution(currentEdumon.id)}
+                disabled={!canEvolve || isLocked}
+                className={`flex items-center justify-center gap-3 font-bold py-4 px-8 rounded-2xl transition-all duration-300 ${
+                  canEvolve && !isLocked
+                    ? "bg-gradient-to-r from-purple-500/80 to-blue-500/80 hover:from-purple-500 hover:to-blue-500 text-white hover:scale-105 hover:shadow-xl border border-white/25"
+                    : "bg-gray-500/20 border border-gray-500/30 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {isLocked ? <Lock size={20} /> : <Zap size={20} />}
+                {isLocked ? "Locked" : "Evolve"}
+              </button>
+            </div>
+
+            {/* Evolution Progress */}
+            {!isLocked && (
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-white/90 font-medium">
+                    Evolution Progress
+                  </span>
+                  <span className="text-white font-bold text-lg">
+                    {currentEdumon.evolutionStage + 1}/3
+                  </span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 h-3 rounded-full transition-all duration-700 shadow-inner"
+                    style={{
+                      width: `${
+                        ((currentEdumon.evolutionStage + 1) / 3) * 100
+                      }%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex justify-between items-center mt-8">
+          <button
+            onClick={prevPage}
+            className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white p-4 rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-xl"
+          >
+            <ChevronLeft size={28} />
+          </button>
+
+          {/* Page Indicators */}
+          <div className="flex gap-3">
+            {edumonData.map((edumon, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(index)}
+                className={`w-4 h-4 rounded-full transition-all duration-300 relative ${
+                  index === currentPage
+                    ? "bg-gradient-to-r from-purple-400 to-blue-400 scale-125 shadow-lg"
+                    : "bg-white/30 hover:bg-white/50"
+                }`}
+              >
+                {!edumon.unlocked && (
+                  <Lock
+                    size={8}
+                    className="absolute -top-1 -right-1 text-gray-400"
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={nextPage}
+            className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white p-4 rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-xl"
+          >
+            <ChevronRight size={28} />
+          </button>
+        </div>
+
+        {/* Statistics Dashboard */}
+        <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6">
+          <h3 className="text-white text-xl font-bold text-center mb-4">
+            Collection Statistics
+          </h3>
+          <div className="grid grid-cols-3 gap-6 text-center">
+            <div>
+              <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text">
+                {
+                  edumonData.filter((e) => e.evolutionStage === 2 && e.unlocked)
+                    .length
+                }
+              </div>
+              <div className="text-white/70 font-medium">Masters</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">
+                {edumonData.filter((e) => e.unlocked).length}
+              </div>
+              <div className="text-white/70 font-medium">Unlocked</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text">
+                {Math.round(
+                  (edumonData
+                    .filter((e) => e.unlocked)
+                    .reduce((sum, e) => sum + e.evolutionStage, 0) /
+                    (edumonData.filter((e) => e.unlocked).length * 2)) *
+                    100
+                ) || 0}
+                %
+              </div>
+              <div className="text-white/70 font-medium">Complete</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default EduMonApp;

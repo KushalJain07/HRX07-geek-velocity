@@ -212,10 +212,7 @@ export default function Onboarding() {
     }, [hologramControls]);
 
     const handleStartMission = () => {
-        // console.log("🚀 Starting mission... Navigating to Pet Selector");
-        // console.log("📍 Current route: /onboarding");
-        // console.log("🎯 Target route: /pet-selector");
-        navigate('/pet-selector');
+        navigate('/student-dashboard');
     };
 
     return (

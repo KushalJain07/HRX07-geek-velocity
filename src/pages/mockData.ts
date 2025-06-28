@@ -22,6 +22,19 @@ export interface Classroom {
   classTags?: string;
 }
 
+export interface Quest {
+  id: number;
+  title: string;
+  description: string;
+  unlocked: boolean;
+  x: number;
+  y: number;
+  constellation: string;
+  difficulty: 'Novice' | 'Adept' | 'Expert' | 'Master' | 'Legend' | 'Mythic';
+  rewards: string[];
+  estimatedTime: string;
+}
+
 export const students: Student[] = [
   { id: 1, name: 'Alice Johnson', email: 'alice.johnson@example.com', status: 'active' },
   { id: 2, name: 'Bob Smith', email: 'bob.smith@example.com', status: 'active' },
@@ -39,6 +52,61 @@ const DEFAULT_CLASSROOMS: Classroom[] = [
   // No default classrooms
 ];
 
+const classQuestData: Record<string, Quest[]> = {
+  '1': [
+    {
+      id: 1,
+      title: 'Stellar Genesis',
+      description: 'Witness the birth of stars in the cosmic nursery. Master the fundamental forces that create light in the darkness.',
+      unlocked: true,
+      x: 15,
+      y: 20,
+      constellation: 'Orion Nebula',
+      difficulty: 'Novice',
+      rewards: ['Star Fragment', '100 XP'],
+      estimatedTime: '15 min',
+    },
+    {
+      id: 2,
+      title: 'Quantum Drift',
+      description: 'Navigate through quantum tunnels where reality bends. Learn to phase between dimensions.',
+      unlocked: true,
+      x: 40,
+      y: 30,
+      constellation: 'Andromeda',
+      difficulty: 'Adept',
+      rewards: ['Quantum Core', '250 XP'],
+      estimatedTime: '25 min',
+    },
+  ],
+  '2': [
+    {
+      id: 1,
+      title: 'Ancient Civilizations',
+      description: 'Explore the rise and fall of ancient empires.',
+      unlocked: true,
+      x: 20,
+      y: 25,
+      constellation: 'Babylon',
+      difficulty: 'Novice',
+      rewards: ['History Scroll', '80 XP'],
+      estimatedTime: '10 min',
+    },
+    {
+      id: 2,
+      title: 'World Wars',
+      description: 'Understand the causes and effects of the world wars.',
+      unlocked: false,
+      x: 60,
+      y: 40,
+      constellation: 'Europe',
+      difficulty: 'Adept',
+      rewards: ['Medal', '200 XP'],
+      estimatedTime: '30 min',
+    },
+  ],
+};
+
 export function getClassrooms(): Classroom[] {
   const data = localStorage.getItem('classrooms');
   if (data) {
@@ -53,4 +121,67 @@ export function getClassrooms(): Classroom[] {
 
 export function setClassrooms(classrooms: Classroom[]) {
   localStorage.setItem('classrooms', JSON.stringify(classrooms));
+}
+
+export function getQuestsForClass(classId: string): Quest[] {
+  return classQuestData[classId] || [];
+}
+
+export function addQuestsForNewClass(classId: string) {
+  if (classQuestData[classId]) return; // Don't overwrite if already exists
+
+  // Generate some random but themed quests
+  const questThemes = [
+    {
+      title: 'Galactic Initiation',
+      description: 'Begin your cosmic journey and meet your crew.',
+      constellation: 'Orion',
+      difficulty: 'Novice',
+      rewards: ['Initiate Badge', '60 XP'],
+      estimatedTime: '10 min',
+    },
+    {
+      title: 'Nebula Navigation',
+      description: 'Chart a course through the mysterious nebula.',
+      constellation: 'Nebula',
+      difficulty: 'Adept',
+      rewards: ['Navigator Pin', '120 XP'],
+      estimatedTime: '20 min',
+    },
+    {
+      title: 'Asteroid Analysis',
+      description: 'Study the composition of asteroids in your sector.',
+      constellation: 'Asteroid Belt',
+      difficulty: 'Expert',
+      rewards: ['Astro Medal', '200 XP'],
+      estimatedTime: '25 min',
+    },
+    {
+      title: 'Supernova Challenge',
+      description: 'Survive and learn from a nearby supernova explosion.',
+      constellation: 'Supernova',
+      difficulty: 'Master',
+      rewards: ['Survivor Trophy', '300 XP'],
+      estimatedTime: '30 min',
+    },
+  ];
+
+  // Shuffle and pick 2-4 quests for variety
+  const shuffled = questThemes
+    .map(q => ({ ...q, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .slice(0, Math.floor(Math.random() * 3) + 2);
+
+  classQuestData[classId] = shuffled.map((q, idx) => ({
+    id: idx + 1,
+    title: `${q.title} #${classId.slice(-3)}`,
+    description: q.description,
+    unlocked: idx === 0,
+    x: 20 + Math.floor(Math.random() * 60),
+    y: 20 + Math.floor(Math.random() * 60),
+    constellation: q.constellation,
+    difficulty: q.difficulty as Quest['difficulty'],
+    rewards: q.rewards,
+    estimatedTime: q.estimatedTime,
+  }));
 } 

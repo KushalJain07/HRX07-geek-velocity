@@ -3,6 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import gsap from 'gsap'
 import { X, Lock, Star, Zap, Crown, Flame } from 'lucide-react'
 import GameHeader from '../Header'
+import { useParams } from 'react-router-dom'
+import { getQuestsForClass } from '../../pages/mockData'
+import type { Quest } from '../../pages/mockData'
+import QuestDetailScreen from './QuestDetailScreen.jsx'
 
 // Mock backend data - replace with your actual API call
 const useQuestsData = () => {
@@ -374,6 +378,7 @@ const QuestModal = ({ quest, onClose }: { quest: Quest | null; onClose: () => vo
                             className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all duration-200 shadow-lg"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            onClick={() => { setShowQuestDetail(true); }}
                         >
                             Begin Quest
                         </motion.button>
@@ -386,10 +391,12 @@ const QuestModal = ({ quest, onClose }: { quest: Quest | null; onClose: () => vo
 
 // Main component
 export default function OptimizedCosmicMap() {
-    const { quests, addQuest } = useQuestsData()
+    const { classId } = useParams<{ classId: string }>();
+    const [quests, setQuests] = useState<Quest[]>(() => getQuestsForClass(classId || '1'));
     const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
     const [scale, setScale] = useState(1)
     const containerRef = useRef(null)
+    const [showQuestDetail, setShowQuestDetail] = useState(false);
 
     // Optimized wheel handler
     const handleWheel = useCallback((e: WheelEvent) => {
@@ -419,7 +426,7 @@ export default function OptimizedCosmicMap() {
             rewards: ['Mystery Reward', '100 XP'],
             estimatedTime: '20 min'
         }
-        addQuest(newQuest)
+        setQuests(prev => [...prev, newQuest])
     }
 
     return (
@@ -493,16 +500,6 @@ export default function OptimizedCosmicMap() {
                 </motion.button>
             </div>
 
-            {/* Demo add quest button */}
-            <motion.button
-                className="fixed top-4 right-4 z-20 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200"
-                onClick={handleAddQuest}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-            >
-                + Add Quest
-            </motion.button>
-
             {/* Instructions */}
             <div className="fixed bottom-6 right-6 z-20 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg p-3 max-w-xs">
                 <div className="text-xs text-gray-300 space-y-1">
@@ -516,6 +513,14 @@ export default function OptimizedCosmicMap() {
                 quest={selectedQuest}
                 onClose={() => setSelectedQuest(null)}
             />
+
+            {/* Render QuestDetailScreen as a modal or page */}
+            {showQuestDetail && (
+                <QuestDetailScreen
+                    onStartQuiz={() => {/* handle quiz start */}}
+                    videoUrl={selectedQuest?.videoUrl || undefined}
+                />
+            )}
         </div>
     )
 }

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import DashboardNav from './DashboardNav';
+import { Home, Users, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Profile: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'profile'>('profile');
+  const [profileTab, setProfileTab] = useState<'profile' | 'settings' | 'notifications'>('profile');
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('profile');
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -38,317 +39,377 @@ const Profile: React.FC = () => {
     navigate('/');
   };
 
+  const handleNav = (tab: 'dashboard' | 'students' | 'profile') => {
+    setActiveTab(tab);
+    if (tab === 'dashboard') navigate('/dashboard');
+    if (tab === 'students') navigate('/students');
+    if (tab === 'profile') navigate('/profile');
+  };
+
+  const handleProfileTab = (tab: 'profile' | 'settings' | 'notifications') => {
+    setProfileTab(tab);
+  };
+
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <div className="profile-image-section">
-          <img src="/teacher.png" alt="Teacher Profile" className="profile-image" />
-          <div className="profile-badge">Teacher</div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden pb-24">
+      {/* Animated Space Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {[...Array(80)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full opacity-20 animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 2}s`
+            }}
+          />
+        ))}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+      <div className="relative z-10 profile-container">
+        <div className="profile-header">
+          <div className="profile-image-section">
+            <img src="/teacher.png" alt="Teacher Profile" className="profile-image" />
+            <div className="profile-badge">Teacher</div>
+          </div>
+          <div className="profile-info">
+            <h1 className="teacher-name">{teacherData.name}</h1>
+            <p className="teacher-title">{teacherData.department} • {teacherData.grade}</p>
+            <p className="teacher-email">{teacherData.email}</p>
+          </div>
         </div>
-        <div className="profile-info">
-          <h1 className="teacher-name">{teacherData.name}</h1>
-          <p className="teacher-title">{teacherData.department} • {teacherData.grade}</p>
-          <p className="teacher-email">{teacherData.email}</p>
+
+        <div className="profile-tabs">
+          <button 
+            className={`tab-btn ${profileTab === 'profile' ? 'active' : ''}`}
+            onClick={() => handleProfileTab('profile')}
+          >
+            Profile Info
+          </button>
+          <button 
+            className={`tab-btn ${profileTab === 'settings' ? 'active' : ''}`}
+            onClick={() => handleProfileTab('settings')}
+          >
+            Settings
+          </button>
+          <button 
+            className={`tab-btn ${profileTab === 'notifications' ? 'active' : ''}`}
+            onClick={() => handleProfileTab('notifications')}
+          >
+            Notifications
+          </button>
         </div>
-      </div>
 
-      <div className="profile-tabs">
-        <button 
-          className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
-          onClick={() => setActiveTab('profile')}
-        >
-          Profile Info
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('settings')}
-        >
-          Settings
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'notifications' ? 'active' : ''}`}
-          onClick={() => setActiveTab('notifications')}
-        >
-          Notifications
-        </button>
-      </div>
+        <div className="profile-content">
+          {profileTab === 'profile' && (
+            <div className="profile-details">
+              <div className="info-section">
+                <h3>Personal Information</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <label>Full Name</label>
+                    <span>{teacherData.name}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Email</label>
+                    <span>{teacherData.email}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Phone</label>
+                    <span>{teacherData.phone}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Department</label>
+                    <span>{teacherData.department}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Grade Level</label>
+                    <span>{teacherData.grade}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Experience</label>
+                    <span>{teacherData.experience}</span>
+                  </div>
+                </div>
+              </div>
 
-      <div className="profile-content">
-        {activeTab === 'profile' && (
-          <div className="profile-details">
-            <div className="info-section">
-              <h3>Personal Information</h3>
-              <div className="info-grid">
-                <div className="info-item">
-                  <label>Full Name</label>
-                  <span>{teacherData.name}</span>
+              <div className="info-section">
+                <h3>Subjects Taught</h3>
+                <div className="subjects-list">
+                  {teacherData.subjects.map((subject, index) => (
+                    <span key={index} className="subject-tag">{subject}</span>
+                  ))}
                 </div>
-                <div className="info-item">
-                  <label>Email</label>
-                  <span>{teacherData.email}</span>
-                </div>
-                <div className="info-item">
-                  <label>Phone</label>
-                  <span>{teacherData.phone}</span>
-                </div>
-                <div className="info-item">
-                  <label>Department</label>
-                  <span>{teacherData.department}</span>
-                </div>
-                <div className="info-item">
-                  <label>Grade Level</label>
-                  <span>{teacherData.grade}</span>
-                </div>
-                <div className="info-item">
-                  <label>Experience</label>
-                  <span>{teacherData.experience}</span>
+              </div>
+
+              <div className="info-section">
+                <h3>Bio</h3>
+                <p className="bio-text">{teacherData.bio}</p>
+              </div>
+
+              <div className="info-section">
+                <h3>Location & Office Hours</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <label>Classroom</label>
+                    <span>{teacherData.location}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Office Hours</label>
+                    <span>{teacherData.officeHours}</span>
+                  </div>
                 </div>
               </div>
             </div>
+          )}
 
-            <div className="info-section">
-              <h3>Subjects Taught</h3>
-              <div className="subjects-list">
-                {teacherData.subjects.map((subject, index) => (
-                  <span key={index} className="subject-tag">{subject}</span>
-                ))}
+          {profileTab === 'settings' && (
+            <div className="settings-section">
+              <div className="setting-group">
+                <h3>Account Settings</h3>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Change Password</h4>
+                    <p>Update your account password</p>
+                  </div>
+                  <button className="setting-btn">Change</button>
+                </div>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Update Profile Picture</h4>
+                    <p>Change your profile image</p>
+                  </div>
+                  <button className="setting-btn">Upload</button>
+                </div>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Edit Personal Information</h4>
+                    <p>Update your contact details</p>
+                  </div>
+                  <button className="setting-btn">Edit</button>
+                </div>
+              </div>
+
+              <div className="setting-group">
+                <h3>Classroom Settings</h3>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Class Schedule</h4>
+                    <p>Manage your class timings</p>
+                  </div>
+                  <button className="setting-btn">Manage</button>
+                </div>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Grading Preferences</h4>
+                    <p>Set up grading scales and policies</p>
+                  </div>
+                  <button className="setting-btn">Configure</button>
+                </div>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Attendance Settings</h4>
+                    <p>Configure attendance tracking</p>
+                  </div>
+                  <button className="setting-btn">Setup</button>
+                </div>
+              </div>
+
+              <div className="setting-group">
+                <h3>Privacy & Security</h3>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Privacy Settings</h4>
+                    <p>Control who can see your profile</p>
+                  </div>
+                  <button className="setting-btn">Manage</button>
+                </div>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Two-Factor Authentication</h4>
+                    <p>Add extra security to your account</p>
+                  </div>
+                  <button className="setting-btn">Enable</button>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="info-section">
-              <h3>Bio</h3>
-              <p className="bio-text">{teacherData.bio}</p>
-            </div>
-
-            <div className="info-section">
-              <h3>Location & Office Hours</h3>
-              <div className="info-grid">
-                <div className="info-item">
-                  <label>Classroom</label>
-                  <span>{teacherData.location}</span>
+          {profileTab === 'notifications' && (
+            <div className="notifications-section">
+              <div className="notification-group">
+                <h3>Notification Preferences</h3>
+                <div className="notification-item">
+                  <div className="notification-info">
+                    <h4>Email Notifications</h4>
+                    <p>Receive updates via email</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={notifications.email}
+                      onChange={() => handleNotificationChange('email')}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
                 </div>
-                <div className="info-item">
-                  <label>Office Hours</label>
-                  <span>{teacherData.officeHours}</span>
+                <div className="notification-item">
+                  <div className="notification-info">
+                    <h4>Push Notifications</h4>
+                    <p>Get instant app notifications</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={notifications.push}
+                      onChange={() => handleNotificationChange('push')}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+                <div className="notification-item">
+                  <div className="notification-info">
+                    <h4>SMS Notifications</h4>
+                    <p>Receive text message alerts</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={notifications.sms}
+                      onChange={() => handleNotificationChange('sms')}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="notification-group">
+                <h3>Specific Notifications</h3>
+                <div className="notification-item">
+                  <div className="notification-info">
+                    <h4>Class Updates</h4>
+                    <p>When class schedules change</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={notifications.classUpdates}
+                      onChange={() => handleNotificationChange('classUpdates')}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+                <div className="notification-item">
+                  <div className="notification-info">
+                    <h4>Student Messages</h4>
+                    <p>When students send messages</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={notifications.studentMessages}
+                      onChange={() => handleNotificationChange('studentMessages')}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+                <div className="notification-item">
+                  <div className="notification-info">
+                    <h4>Reminders</h4>
+                    <p>Class and meeting reminders</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={notifications.reminders}
+                      onChange={() => handleNotificationChange('reminders')}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
                 </div>
               </div>
             </div>
+          )}
+        </div>
+
+        <div className="logout-section">
+          <button className="logout-btn" onClick={handleLogout}>
+            Log Out
+          </button>
+        </div>
+
+        {/* Bottom Navigation Bar */}
+        <nav className="fixed bottom-0 left-0 w-full z-20 bg-black/60 backdrop-blur-xl border-t border-white/10 flex justify-center transition-all duration-500">
+          <div className="flex w-full max-w-md mx-auto">
+            <button
+              onClick={() => handleNav('dashboard')}
+              className={`flex-1 flex flex-col items-center py-3 transition-all ${activeTab === 'dashboard' ? 'text-indigo-400 scale-110' : 'text-gray-300 hover:text-white'}`}
+            >
+              <Home className="h-6 w-6 mb-1" />
+              <span className="text-xs font-medium">Dashboard</span>
+            </button>
+            <button
+              onClick={() => handleNav('students')}
+              className={`flex-1 flex flex-col items-center py-3 transition-all ${activeTab === 'students' ? 'text-cyan-400 scale-110' : 'text-gray-300 hover:text-white'}`}
+            >
+              <Users className="h-6 w-6 mb-1" />
+              <span className="text-xs font-medium">Students</span>
+            </button>
+            <button
+              onClick={() => handleNav('profile')}
+              className={`flex-1 flex flex-col items-center py-3 transition-all ${activeTab === 'profile' ? 'text-pink-400 scale-110' : 'text-gray-300 hover:text-white'}`}
+            >
+              <User className="h-6 w-6 mb-1" />
+              <span className="text-xs font-medium">Profile</span>
+            </button>
           </div>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className="settings-section">
-            <div className="setting-group">
-              <h3>Account Settings</h3>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <h4>Change Password</h4>
-                  <p>Update your account password</p>
-                </div>
-                <button className="setting-btn">Change</button>
-              </div>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <h4>Update Profile Picture</h4>
-                  <p>Change your profile image</p>
-                </div>
-                <button className="setting-btn">Upload</button>
-              </div>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <h4>Edit Personal Information</h4>
-                  <p>Update your contact details</p>
-                </div>
-                <button className="setting-btn">Edit</button>
-              </div>
-            </div>
-
-            <div className="setting-group">
-              <h3>Classroom Settings</h3>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <h4>Class Schedule</h4>
-                  <p>Manage your class timings</p>
-                </div>
-                <button className="setting-btn">Manage</button>
-              </div>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <h4>Grading Preferences</h4>
-                  <p>Set up grading scales and policies</p>
-                </div>
-                <button className="setting-btn">Configure</button>
-              </div>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <h4>Attendance Settings</h4>
-                  <p>Configure attendance tracking</p>
-                </div>
-                <button className="setting-btn">Setup</button>
-              </div>
-            </div>
-
-            <div className="setting-group">
-              <h3>Privacy & Security</h3>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <h4>Privacy Settings</h4>
-                  <p>Control who can see your profile</p>
-                </div>
-                <button className="setting-btn">Manage</button>
-              </div>
-              <div className="setting-item">
-                <div className="setting-info">
-                  <h4>Two-Factor Authentication</h4>
-                  <p>Add extra security to your account</p>
-                </div>
-                <button className="setting-btn">Enable</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'notifications' && (
-          <div className="notifications-section">
-            <div className="notification-group">
-              <h3>Notification Preferences</h3>
-              <div className="notification-item">
-                <div className="notification-info">
-                  <h4>Email Notifications</h4>
-                  <p>Receive updates via email</p>
-                </div>
-                <label className="toggle-switch">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.email}
-                    onChange={() => handleNotificationChange('email')}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              <div className="notification-item">
-                <div className="notification-info">
-                  <h4>Push Notifications</h4>
-                  <p>Get instant app notifications</p>
-                </div>
-                <label className="toggle-switch">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.push}
-                    onChange={() => handleNotificationChange('push')}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              <div className="notification-item">
-                <div className="notification-info">
-                  <h4>SMS Notifications</h4>
-                  <p>Receive text message alerts</p>
-                </div>
-                <label className="toggle-switch">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.sms}
-                    onChange={() => handleNotificationChange('sms')}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-
-            <div className="notification-group">
-              <h3>Specific Notifications</h3>
-              <div className="notification-item">
-                <div className="notification-info">
-                  <h4>Class Updates</h4>
-                  <p>When class schedules change</p>
-                </div>
-                <label className="toggle-switch">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.classUpdates}
-                    onChange={() => handleNotificationChange('classUpdates')}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              <div className="notification-item">
-                <div className="notification-info">
-                  <h4>Student Messages</h4>
-                  <p>When students send messages</p>
-                </div>
-                <label className="toggle-switch">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.studentMessages}
-                    onChange={() => handleNotificationChange('studentMessages')}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              <div className="notification-item">
-                <div className="notification-info">
-                  <h4>Reminders</h4>
-                  <p>Class and meeting reminders</p>
-                </div>
-                <label className="toggle-switch">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.reminders}
-                    onChange={() => handleNotificationChange('reminders')}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
+        </nav>
       </div>
-
-      <div className="logout-section">
-        <button className="logout-btn" onClick={handleLogout}>
-          Log Out
-        </button>
-      </div>
-
-      <DashboardNav active="Profile" />
 
       <style>{`
         .profile-container {
-          background: #f8f9fa;
           min-height: 100vh;
-          padding: 1rem;
-          padding-bottom: 100px;
+          background: transparent;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          padding: 1.5rem 1rem;
+          padding-bottom: 6rem;
         }
 
         .profile-header {
-          background: white;
-          border-radius: 1rem;
-          padding: 2rem;
-          margin-bottom: 1.5rem;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
           display: flex;
           align-items: center;
           gap: 2rem;
+          background: rgba(0, 0, 0, 0.3);
+          backdrop-blur-sm;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 1rem;
+          padding: 2rem;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+          margin-bottom: 1.5rem;
         }
 
         .profile-image-section {
           position: relative;
+          flex-shrink: 0;
         }
 
         .profile-image {
-          width: 120px;
-          height: 120px;
+          width: 100px;
+          height: 100px;
           border-radius: 50%;
           object-fit: cover;
-          border: 4px solid #667eea;
+          border: 4px solid #8b5cf6;
         }
 
         .profile-badge {
           position: absolute;
           bottom: 0;
           right: 0;
-          background: #667eea;
+          background: #8b5cf6;
           color: white;
           padding: 0.25rem 0.75rem;
           border-radius: 1rem;
@@ -363,30 +424,32 @@ const Profile: React.FC = () => {
         .teacher-name {
           font-size: 1.75rem;
           font-weight: 700;
-          color: #1f2937;
+          color: white;
           margin: 0 0 0.5rem 0;
         }
 
         .teacher-title {
           font-size: 1.1rem;
-          color: #6b7280;
+          color: #cbd5e1;
           margin: 0 0 0.5rem 0;
           font-weight: 500;
         }
 
         .teacher-email {
-          color: #667eea;
+          color: #a855f7;
           margin: 0;
           font-weight: 500;
         }
 
         .profile-tabs {
           display: flex;
-          background: white;
+          background: rgba(0, 0, 0, 0.3);
+          backdrop-blur-sm;
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 1rem;
           padding: 0.5rem;
           margin-bottom: 1.5rem;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
 
         .tab-btn {
@@ -396,22 +459,25 @@ const Profile: React.FC = () => {
           background: none;
           border-radius: 0.5rem;
           font-weight: 600;
-          color: #6b7280;
+          color: #cbd5e1;
           cursor: pointer;
           transition: all 0.2s;
         }
 
         .tab-btn.active {
-          background: #667eea;
+          background: rgba(139, 92, 246, 0.3);
+          border: 1px solid rgba(139, 92, 246, 0.5);
           color: white;
         }
 
         .profile-content {
-          background: white;
+          background: rgba(0, 0, 0, 0.3);
+          backdrop-blur-sm;
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 1rem;
           padding: 2rem;
           margin-bottom: 1.5rem;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
 
         .info-section {
@@ -419,12 +485,12 @@ const Profile: React.FC = () => {
         }
 
         .info-section h3 {
-          color: #1f2937;
+          color: white;
           font-size: 1.25rem;
           font-weight: 600;
           margin: 0 0 1rem 0;
           padding-bottom: 0.5rem;
-          border-bottom: 2px solid #f3f4f6;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .info-grid {
@@ -441,12 +507,12 @@ const Profile: React.FC = () => {
 
         .info-item label {
           font-size: 0.875rem;
-          color: #6b7280;
+          color: #cbd5e1;
           font-weight: 500;
         }
 
         .info-item span {
-          color: #1f2937;
+          color: white;
           font-weight: 500;
         }
 
@@ -457,8 +523,9 @@ const Profile: React.FC = () => {
         }
 
         .subject-tag {
-          background: #dbeafe;
-          color: #1e40af;
+          background: rgba(139, 92, 246, 0.2);
+          color: #a855f7;
+          border: 1px solid rgba(139, 92, 246, 0.3);
           padding: 0.5rem 1rem;
           border-radius: 2rem;
           font-size: 0.875rem;
@@ -466,7 +533,7 @@ const Profile: React.FC = () => {
         }
 
         .bio-text {
-          color: #4b5563;
+          color: #cbd5e1;
           line-height: 1.6;
           margin: 0;
         }
@@ -476,12 +543,12 @@ const Profile: React.FC = () => {
         }
 
         .setting-group h3, .notification-group h3 {
-          color: #1f2937;
+          color: white;
           font-size: 1.25rem;
           font-weight: 600;
           margin: 0 0 1rem 0;
           padding-bottom: 0.5rem;
-          border-bottom: 2px solid #f3f4f6;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .setting-item, .notification-item {
@@ -489,7 +556,7 @@ const Profile: React.FC = () => {
           justify-content: space-between;
           align-items: center;
           padding: 1rem 0;
-          border-bottom: 1px solid #f3f4f6;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .setting-item:last-child, .notification-item:last-child {
@@ -501,19 +568,19 @@ const Profile: React.FC = () => {
         }
 
         .setting-info h4, .notification-info h4 {
-          color: #1f2937;
+          color: white;
           font-weight: 600;
           margin: 0 0 0.25rem 0;
         }
 
         .setting-info p, .notification-info p {
-          color: #6b7280;
+          color: #cbd5e1;
           margin: 0;
           font-size: 0.875rem;
         }
 
         .setting-btn {
-          background: #667eea;
+          background: #8b5cf6;
           color: white;
           border: none;
           padding: 0.5rem 1rem;
@@ -524,7 +591,7 @@ const Profile: React.FC = () => {
         }
 
         .setting-btn:hover {
-          background: #5a67d8;
+          background: #7c3aed;
         }
 
         .toggle-switch {
@@ -547,7 +614,7 @@ const Profile: React.FC = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: #ccc;
+          background-color: rgba(255, 255, 255, 0.3);
           transition: 0.4s;
           border-radius: 24px;
         }
@@ -559,13 +626,13 @@ const Profile: React.FC = () => {
           width: 18px;
           left: 3px;
           bottom: 3px;
-          background-color: white;
+          background-color: #8b5cf6;
           transition: 0.4s;
           border-radius: 50%;
         }
 
         input:checked + .toggle-slider {
-          background-color: #667eea;
+          background-color: rgba(139, 92, 246, 0.3);
         }
 
         input:checked + .toggle-slider:before {
@@ -598,13 +665,11 @@ const Profile: React.FC = () => {
             text-align: center;
             gap: 1rem;
           }
-
-          .info-grid {
-            grid-template-columns: 1fr;
-          }
-
           .profile-tabs {
             flex-direction: column;
+          }
+          .info-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>

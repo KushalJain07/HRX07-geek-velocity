@@ -1,78 +1,122 @@
-import React, { useState } from 'react';
-import { 
-  ArrowLeft, 
-  Upload, 
-  Users, 
-  BookOpen, 
-  FileText, 
-  Settings, 
-  Bell, 
-  Lock, 
-  Globe, 
+import React, { useState } from "react";
+import {
+  ArrowLeft,
+  Users,
+  BookOpen,
+  FileText,
+  Settings,
+  Bell,
+  Lock,
+  Globe,
   Calendar,
   Clock,
   MapPin,
   Tag,
-  Plus,
-  Minus,
   ChevronDown,
   ChevronUp,
-  Save,
-  Eye,
-  EyeOff,
   Shield,
   UserPlus,
   GraduationCap,
-  Palette
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { setClassrooms, getClassrooms } from './mockData';
+  Palette,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { setClassrooms, getClassrooms } from "./mockData";
 
 const CreateClass: React.FC = () => {
-  const [className, setClassName] = useState('');
-  const [subject, setSubject] = useState('');
+  const [className, setClassName] = useState("");
+  const [subject, setSubject] = useState("");
   const [studentCount, setStudentCount] = useState(25);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
   const [selectedBackground, setSelectedBackground] = useState(0);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  
+
   // Advanced options state
   const [notifications, setNotifications] = useState(true);
-  const [classType, setClassType] = useState('public'); // public, private, restricted
+  const [classType, setClassType] = useState("public"); // public, private, restricted
   const [allowStudentInvites, setAllowStudentInvites] = useState(false);
   const [autoAcceptStudents, setAutoAcceptStudents] = useState(true);
-  const [classSchedule, setClassSchedule] = useState('');
-  const [classLocation, setClassLocation] = useState('');
-  const [classTags, setClassTags] = useState('');
-  const [gradeLevel, setGradeLevel] = useState('');
-  const [academicYear, setAcademicYear] = useState('2024-2025');
+  const [classSchedule, setClassSchedule] = useState("");
+  const [classLocation, setClassLocation] = useState("");
+  const [classTags, setClassTags] = useState("");
+  const [gradeLevel, setGradeLevel] = useState("");
+  const [academicYear, setAcademicYear] = useState("2024-2025");
 
   const backgroundOptions = [
-    { id: 0, name: 'Ocean Blue', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', preview: '#667eea' },
-    { id: 1, name: 'Sunset Orange', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', preview: '#f093fb' },
-    { id: 2, name: 'Forest Green', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', preview: '#4facfe' },
-    { id: 3, name: 'Purple Dreams', gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', preview: '#a8edea' },
-    { id: 4, name: 'Warm Coral', gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', preview: '#ff9a9e' },
-    { id: 5, name: 'Sky Blue', gradient: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', preview: '#a1c4fd' },
-    { id: 6, name: 'Golden Hour', gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', preview: '#ffecd2' },
-    { id: 7, name: 'Mint Fresh', gradient: 'linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%)', preview: '#a8e6cf' },
-  ];
-
-  const subjects = [
-    'Mathematics', 'Science', 'English', 'History', 'Geography', 'Physics', 
-    'Chemistry', 'Biology', 'Computer Science', 'Art', 'Music', 'Physical Education'
+    {
+      id: 0,
+      name: "Ocean Blue",
+      gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      preview: "#667eea",
+    },
+    {
+      id: 1,
+      name: "Sunset Orange",
+      gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      preview: "#f093fb",
+    },
+    {
+      id: 2,
+      name: "Forest Green",
+      gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      preview: "#4facfe",
+    },
+    {
+      id: 3,
+      name: "Purple Dreams",
+      gradient: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+      preview: "#a8edea",
+    },
+    {
+      id: 4,
+      name: "Warm Coral",
+      gradient: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+      preview: "#ff9a9e",
+    },
+    {
+      id: 5,
+      name: "Sky Blue",
+      gradient: "linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)",
+      preview: "#a1c4fd",
+    },
+    {
+      id: 6,
+      name: "Golden Hour",
+      gradient: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+      preview: "#ffecd2",
+    },
+    {
+      id: 7,
+      name: "Mint Fresh",
+      gradient: "linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%)",
+      preview: "#a8e6cf",
+    },
   ];
 
   const gradeLevels = [
-    'Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5',
-    'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'
+    "Kindergarten",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
+    "Grade 10",
+    "Grade 11",
+    "Grade 12",
   ];
 
-  const handleStudentCountChange = (increment: boolean) => {
-    if (increment) {
-      setStudentCount(prev => Math.min(prev + 1, 100));
+  const handleStudentCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "" || value === "0") {
+      setStudentCount(0);
     } else {
-      setStudentCount(prev => Math.max(prev - 1, 1));
+      const numValue = parseInt(value);
+      if (!isNaN(numValue) && numValue > 0) {
+        setStudentCount(numValue);
+      }
     }
   };
 
@@ -94,33 +138,33 @@ const CreateClass: React.FC = () => {
       academicYear,
       classSchedule,
       classLocation,
-      classTags
+      classTags,
     };
     setClassrooms([...classrooms, newClassroom]);
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   const navigate = useNavigate();
 
   return (
     <>
-    <div className="create-class-container">
+      <div className="create-class-container">
         <button
           className="back-arrow-btn"
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate("/dashboard")}
           style={{
-            position: 'absolute',
-            top: '1.5rem',
-            left: '1.5rem',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '1.5rem',
-            color: '#6366f1',
+            position: "absolute",
+            top: "1.5rem",
+            left: "1.5rem",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "1.5rem",
+            color: "#6366f1",
             zIndex: 10,
-            display: 'flex',
-            alignItems: 'center',
-            padding: 0
+            display: "flex",
+            alignItems: "center",
+            padding: 0,
           }}
           aria-label="Back to Dashboard"
         >
@@ -130,23 +174,30 @@ const CreateClass: React.FC = () => {
           {/* Class Preview */}
           <div className="preview-section">
             <h3 className="section-title">Class Preview</h3>
-            <div 
+            <div
               className="class-preview-card"
-              style={{ background: backgroundOptions[selectedBackground].gradient }}
+              style={{
+                background: backgroundOptions[selectedBackground].gradient,
+              }}
             >
               <div className="preview-header">
                 <div className="subject-badge">
                   <BookOpen size={14} />
-                  <span>{subject || 'Subject'}</span>
+                  <span>{subject || "Subject"}</span>
                 </div>
                 <div className="visibility-indicator">
-                  {classType === 'private' ? <Lock size={16} /> : 
-                   classType === 'restricted' ? <Shield size={16} /> : <Globe size={16} />}
+                  {classType === "private" ? (
+                    <Lock size={16} />
+                  ) : classType === "restricted" ? (
+                    <Shield size={16} />
+                  ) : (
+                    <Globe size={16} />
+                  )}
                 </div>
               </div>
-              
-              <h3 className="preview-title">{className || 'Class Name'}</h3>
-              
+
+              <h3 className="preview-title">{className || "Class Name"}</h3>
+
               <div className="preview-footer">
                 <div className="students-info">
                   <Users size={16} />
@@ -161,7 +212,7 @@ const CreateClass: React.FC = () => {
               {/* Basic Information */}
               <div className="form-section">
                 <h3 className="section-title">Basic Information</h3>
-                
+
                 <div className="form-group">
                   <label className="form-label">
                     <BookOpen size={16} />
@@ -182,17 +233,14 @@ const CreateClass: React.FC = () => {
                     <GraduationCap size={16} />
                     Subject *
                   </label>
-                  <select
-                    className="form-select"
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Enter subject name (e.g., Advanced Mathematics, Physics 101)"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     required
-                  >
-                    <option value="">Select a subject</option>
-                    {subjects.map((subj) => (
-                      <option key={subj} value={subj}>{subj}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 <div className="form-group">
@@ -200,23 +248,15 @@ const CreateClass: React.FC = () => {
                     <Users size={16} />
                     Number of Students *
                   </label>
-                  <div className="number-picker">
-                    <button 
-                      type="button"
-                      className="number-btn"
-                      onClick={() => handleStudentCountChange(false)}
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span className="number-display">{studentCount}</span>
-                    <button 
-                      type="button"
-                      className="number-btn"
-                      onClick={() => handleStudentCountChange(true)}
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
+                  <input
+                    type="number"
+                    className="form-input"
+                    placeholder="Enter number of students"
+                    value={studentCount || ""}
+                    onChange={handleStudentCountChange}
+                    min="1"
+                    required
+                  />
                 </div>
 
                 <div className="form-group">
@@ -244,7 +284,9 @@ const CreateClass: React.FC = () => {
                   {backgroundOptions.map((bg) => (
                     <div
                       key={bg.id}
-                      className={`background-option ${selectedBackground === bg.id ? 'selected' : ''}`}
+                      className={`background-option ${
+                        selectedBackground === bg.id ? "selected" : ""
+                      }`}
                       style={{ background: bg.gradient }}
                       onClick={() => setSelectedBackground(bg.id)}
                     >
@@ -262,12 +304,17 @@ const CreateClass: React.FC = () => {
               {/* Advanced Options */}
               <div className="form-section">
                 <button
+                  type="button"
                   className="advanced-toggle"
                   onClick={() => setShowAdvanced(!showAdvanced)}
                 >
                   <Settings size={16} />
                   Advanced Options
-                  {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  {showAdvanced ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
                 </button>
 
                 {showAdvanced && (
@@ -281,43 +328,49 @@ const CreateClass: React.FC = () => {
                             type="radio"
                             name="classType"
                             value="public"
-                            checked={classType === 'public'}
+                            checked={classType === "public"}
                             onChange={(e) => setClassType(e.target.value)}
                           />
                           <Globe size={16} />
                           <div>
                             <span className="radio-title">Public</span>
-                            <span className="radio-description">Anyone can find and join</span>
+                            <span className="radio-description">
+                              Anyone can find and join
+                            </span>
                           </div>
                         </label>
-                        
+
                         <label className="radio-option">
                           <input
                             type="radio"
                             name="classType"
                             value="restricted"
-                            checked={classType === 'restricted'}
+                            checked={classType === "restricted"}
                             onChange={(e) => setClassType(e.target.value)}
                           />
                           <Shield size={16} />
                           <div>
                             <span className="radio-title">Restricted</span>
-                            <span className="radio-description">Requires approval to join</span>
+                            <span className="radio-description">
+                              Requires approval to join
+                            </span>
                           </div>
                         </label>
-                        
+
                         <label className="radio-option">
                           <input
                             type="radio"
                             name="classType"
                             value="private"
-                            checked={classType === 'private'}
+                            checked={classType === "private"}
                             onChange={(e) => setClassType(e.target.value)}
                           />
                           <Lock size={16} />
                           <div>
                             <span className="radio-title">Private</span>
-                            <span className="radio-description">Invitation only</span>
+                            <span className="radio-description">
+                              Invitation only
+                            </span>
                           </div>
                         </label>
                       </div>
@@ -335,8 +388,12 @@ const CreateClass: React.FC = () => {
                           />
                           <Bell size={16} />
                           <div>
-                            <span className="checkbox-title">Enable Notifications</span>
-                            <span className="checkbox-description">Send updates about class activities</span>
+                            <span className="checkbox-title">
+                              Enable Notifications
+                            </span>
+                            <span className="checkbox-description">
+                              Send updates about class activities
+                            </span>
                           </div>
                         </label>
 
@@ -344,12 +401,18 @@ const CreateClass: React.FC = () => {
                           <input
                             type="checkbox"
                             checked={allowStudentInvites}
-                            onChange={(e) => setAllowStudentInvites(e.target.checked)}
+                            onChange={(e) =>
+                              setAllowStudentInvites(e.target.checked)
+                            }
                           />
                           <UserPlus size={16} />
                           <div>
-                            <span className="checkbox-title">Allow Student Invites</span>
-                            <span className="checkbox-description">Students can invite others</span>
+                            <span className="checkbox-title">
+                              Allow Student Invites
+                            </span>
+                            <span className="checkbox-description">
+                              Students can invite others
+                            </span>
                           </div>
                         </label>
 
@@ -357,12 +420,18 @@ const CreateClass: React.FC = () => {
                           <input
                             type="checkbox"
                             checked={autoAcceptStudents}
-                            onChange={(e) => setAutoAcceptStudents(e.target.checked)}
+                            onChange={(e) =>
+                              setAutoAcceptStudents(e.target.checked)
+                            }
                           />
                           <Users size={16} />
                           <div>
-                            <span className="checkbox-title">Auto-accept Students</span>
-                            <span className="checkbox-description">Automatically accept join requests</span>
+                            <span className="checkbox-title">
+                              Auto-accept Students
+                            </span>
+                            <span className="checkbox-description">
+                              Automatically accept join requests
+                            </span>
                           </div>
                         </label>
                       </div>
@@ -382,7 +451,9 @@ const CreateClass: React.FC = () => {
                         >
                           <option value="">Select grade level</option>
                           {gradeLevels.map((grade) => (
-                            <option key={grade} value={grade}>{grade}</option>
+                            <option key={grade} value={grade}>
+                              {grade}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -451,8 +522,16 @@ const CreateClass: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="action-buttons">
-                <button type="button" className="cancel-btn" onClick={() => navigate('/dashboard')}>Cancel</button>
-                <button type="submit" className="create-btn">Create</button>
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="create-btn">
+                  Create
+                </button>
               </div>
             </form>
           </div>
@@ -652,43 +731,6 @@ const CreateClass: React.FC = () => {
         .form-textarea {
           resize: vertical;
           min-height: 100px;
-        }
-
-        .number-picker {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          background: white;
-          border: 2px solid #e5e7eb;
-          border-radius: 0.5rem;
-          padding: 0.5rem;
-          width: fit-content;
-        }
-
-        .number-btn {
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: 0.375rem;
-          padding: 0.5rem;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #64748b;
-          transition: all 0.2s;
-        }
-
-        .number-btn:hover {
-          background: #e2e8f0;
-          color: #475569;
-        }
-
-        .number-display {
-          font-size: 1.125rem;
-          font-weight: 600;
-          color: #1e293b;
-          min-width: 2rem;
-          text-align: center;
         }
 
         .background-grid {
@@ -940,4 +982,4 @@ const CreateClass: React.FC = () => {
   );
 };
 
-export default CreateClass; 
+export default CreateClass;

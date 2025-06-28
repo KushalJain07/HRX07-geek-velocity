@@ -24,9 +24,9 @@ const fadeInBlur = {
     filter: "blur(0px)",
     y: 0,
     rotate: 0,
-    transition: { duration: 0.2, ease: "easeInOut" },
+    transition: { duration: 0.2, ease: "easeInOut" as const },
   },
-};
+} as const;
 
 const Alert: React.FC<AlertProps> = ({
   type = "info",

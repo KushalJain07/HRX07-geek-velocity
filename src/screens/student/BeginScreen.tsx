@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Button } from "@/components/ui/moving-border";
 
 export default function EnterCodeScreen() {
     const inputRefs = useRef<Array<HTMLInputElement | null>>([])
@@ -69,9 +70,16 @@ export default function EnterCodeScreen() {
                     />
                 ))}
             </motion.div>
+            <div>
+            <Button
+            borderRadius="10rem"
+            className=" bg-white dark:bg-slate-900 text-black dark:text-white border-neutral-200 dark:border-slate-800 py-7">
+                GO!
+            </Button>
+            </div>
 
             <motion.p
-                className="text-base text-center text-white/80 px-2 md:px-4 font-medium"
+                className="text-base text-center text-white/80 px-2 md:px-4 font-medium py-7"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.9 }}

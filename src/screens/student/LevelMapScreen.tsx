@@ -2,6 +2,9 @@ import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import gsap from 'gsap'
 import { X, Lock, Star, Zap, Crown, Flame } from 'lucide-react'
+import { BottomTabNav } from "../BottomTab";
+// import { Home, Trophy, Medal, User } from "lucide-react";
+
 
 // Mock backend data - replace with your actual API call
 const useQuestsData = () => {
@@ -94,7 +97,19 @@ const useQuestsData = () => {
     ])
 
     // Simulate adding new quests from backend
-    const addQuest = useCallback((newQuest) => {
+    interface NewQuest {
+        title: string;
+        description: string;
+        unlocked: boolean;
+        x: number;
+        y: number;
+        constellation: string;
+        difficulty: Difficulty;
+        rewards: string[];
+        estimatedTime: string;
+    }
+
+    const addQuest = useCallback((newQuest: NewQuest) => {
         setQuests(prev => [...prev, { ...newQuest, id: prev.length + 1 }])
     }, [])
 
@@ -137,11 +152,37 @@ const StarField = React.memo(() => {
     )
 })
 
-const QuestOrb = React.memo(({ quest, onClick, index }) => {
+type Difficulty = 'Novice' | 'Adept' | 'Expert' | 'Master' | 'Legend' | 'Mythic';
+
+type Quest = {
+    id: number;
+    title: string;
+    description: string;
+    unlocked: boolean;
+    x: number;
+    y: number;
+    constellation: string;
+    difficulty: Difficulty;
+    rewards: string[];
+    estimatedTime: string;
+};
+
+interface QuestOrbProps {
+    quest: Quest;
+    onClick: (quest: Quest) => void;
+    index: number;
+}
+
+const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
     const orbRef = useRef(null)
     const glowRef = useRef(null)
 
-    const difficultyConfig = useMemo(() => ({
+    const difficultyConfig: Record<Difficulty, {
+        gradient: string;
+        glow: string;
+        icon: React.ElementType;
+        ring: string;
+    }> = useMemo(() => ({
         'Novice': {
             gradient: 'from-emerald-400 to-green-600',
             glow: 'emerald-400',
@@ -427,131 +468,165 @@ export default function OptimizedCosmicMap() {
 
     // ...rest of your existing logic like handleWheel, useEffect, render, etc.
 
-// Optimized wheel handler
-const handleWheel = useCallback((e) => {
-    e.preventDefault()
-    const delta = e.deltaY > 0 ? 0.9 : 1.1
-    setScale(prev => Math.max(0.5, Math.min(2.5, prev * delta)))
-}, [])
+    // Optimized wheel handler
+    const handleWheel = useCallback((e) => {
+        e.preventDefault()
+        const delta = e.deltaY > 0 ? 0.9 : 1.1
+        setScale(prev => Math.max(0.5, Math.min(2.5, prev * delta)))
+    }, [])
 
-useEffect(() => {
-    const container = containerRef.current
-    if (container) {
-        container.addEventListener('wheel', handleWheel, { passive: false })
-        return () => container.removeEventListener('wheel', handleWheel)
+    useEffect(() => {
+        const container = containerRef.current
+        if (container) {
+            container.addEventListener('wheel', handleWheel, { passive: false })
+            return () => container.removeEventListener('wheel', handleWheel)
+        }
+    }, [handleWheel])
+
+    // Demo function to add new quest (simulate backend)
+    const handleAddQuest = () => {
+        const newQuest = {
+            title: `Quest ${quests.length + 1}`,
+            description: 'A new adventure awaits in the cosmic expanse.',
+            unlocked: true,
+            x: Math.random() * 80 + 10,
+            y: Math.random() * 80 + 10,
+            constellation: 'New Sector',
+            difficulty: 'Novice',
+            rewards: ['Mystery Reward', '100 XP'],
+            estimatedTime: '20 min'
+        }
+        addQuest(newQuest)
     }
-}, [handleWheel])
 
-// Demo function to add new quest (simulate backend)
-const handleAddQuest = () => {
-    const newQuest = {
-        title: `Quest ${quests.length + 1}`,
-        description: 'A new adventure awaits in the cosmic expanse.',
-        unlocked: true,
-        x: Math.random() * 80 + 10,
-        y: Math.random() * 80 + 10,
-        constellation: 'New Sector',
-        difficulty: 'Novice',
-        rewards: ['Mystery Reward', '100 XP'],
-        estimatedTime: '20 min'
-    }
-    addQuest(newQuest)
-}
+    return (
+        <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-blue-950 via-purple-950 to-blue-950">
+            {/* Background */}
+            <StarField />
+            <div className="absolute inset-0 bg-gradient-radial from-transparent via-purple-900/5 to-black/20" />
 
-return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-blue-950 via-purple-950 to-blue-950">
-        {/* Background */}
-        <StarField />
-        <div className="absolute inset-0 bg-gradient-radial from-transparent via-purple-900/5 to-black/20" />
+            {/* Map container */}
+            <motion.div
+                ref={containerRef}
+                className="absolute inset-0 cursor-grab active:cursor-grabbing"
+                drag
+                dragElastic={0.05}
+                dragConstraints={{
+                    left: -200,
+                    right: 200,
+                    top: -200,
+                    bottom: 200
+                }}
+                animate={{ scale }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+                {/* Quest orbs */}
+                {quests.map((quest, index) => (
+                    <QuestOrb
+                        key={quest.id}
+                        quest={quest}
+                        onClick={setSelectedQuest}
+                        index={index}
+                    />
+                ))}
+            </motion.div>
 
-        {/* Map container */}
-        <motion.div
-            ref={containerRef}
-            className="absolute inset-0 cursor-grab active:cursor-grabbing"
-            drag
-            dragElastic={0.05}
-            dragConstraints={{
-                left: -200,
-                right: 200,
-                top: -200,
-                bottom: 200
-            }}
-            animate={{ scale }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-            {/* Quest orbs */}
-            {quests.map((quest, index) => (
-                <QuestOrb
-                    key={quest.id}
-                    quest={quest}
-                    onClick={setSelectedQuest}
-                    index={index}
-                />
-            ))}
-        </motion.div>
-
-        {/* UI Controls */}
-        <div className="fixed top-4 left-4 z-20 space-y-2">
-            <div className="bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg p-3">
-                <div className="text-sm text-purple-300 mb-2 font-semibold">Progress</div>
-                <div className="flex gap-1 mb-2">
-                    {quests.map(quest => (
-                        <div
-                            key={quest.id}
-                            className={`w-3 h-3 rounded-full ${quest.unlocked ? 'bg-cyan-400' : 'bg-gray-600'
-                                }`}
-                        />
-                    ))}
-                </div>
-                <div className="text-xs text-gray-400">
-                    {quests.filter(q => q.unlocked).length} / {quests.length} Unlocked
+            {/* UI Controls */}
+            <div className="fixed top-4 left-4 z-20 space-y-2">
+                <div className="bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg p-3">
+                    <div className="text-sm text-purple-300 mb-2 font-semibold">Progress</div>
+                    <div className="flex gap-1 mb-2">
+                        {quests.map(quest => (
+                            <div
+                                key={quest.id}
+                                className={`w-3 h-3 rounded-full ${quest.unlocked ? 'bg-cyan-400' : 'bg-gray-600'
+                                    }`}
+                            />
+                        ))}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                        {quests.filter(q => q.unlocked).length} / {quests.length} Unlocked
+                    </div>
                 </div>
             </div>
-        </div>
+            <div>
+                {/* Main content */}
+                <BottomTabNav 
+                tabs={[
+                    {
+                        id: "home",
+                        label: "Home",
+                        icon: <Home className="w-4 h-4 sm:w-6 sm:h-6" />,
+                        path: "/",
+                        color: "primary",
+                    },
+                    {
+                        id: "leaderboard",
+                        label: "Leaderboard",
+                        icon: <Trophy className="w-4 h-4 sm:w-6 sm:h-6" />,
+                        path: "/leaderboard",
+                        color: "secondary",
+                    },
+                    {
+                        id: "achievements",
+                        label: "Achievements",
+                        icon: < Medal className="w-4 h-4 sm:w-6 sm:h-6" />,
+                        path: "/achievements",
+                        color: "success",
+                    },
+                    {
+                        id: "profile",
+                        label: "Profile",
+                        icon: <User className="w-4 h-4 sm:w-6 sm:h-6" />,
+                        path: "/profile",
+                        color: "info",
+                    },
+                ]} />
+                </div>
 
-        {/* Zoom controls */}
-        <div className="fixed bottom-6 left-6 z-20 flex flex-col gap-2">
-            <motion.button
-                className="w-12 h-12 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg flex items-center justify-center text-white hover:bg-purple-900/40 transition-all duration-200"
-                onClick={() => setScale(prev => Math.min(2.5, prev * 1.2))}
+            {/* Zoom controls */}
+            <div className="fixed bottom-6 left-6 z-20 flex flex-col gap-2 ">
+                <motion.button
+                    className="w-12 h-12 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg flex items-center justify-center text-white hover:bg-purple-900/40 transition-all duration-200"
+                    onClick={() => setScale(prev => Math.min(2.5, prev * 1.2))}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    +
+                </motion.button>
+                <motion.button
+                    className="w-12 h-12 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg flex items-center justify-center text-white hover:bg-purple-900/40 transition-all duration-200"
+                    onClick={() => setScale(prev => Math.max(0.5, prev * 0.8))}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    -
+                </motion.button>
+            </div>
+
+            {/* Demo add quest button */}
+            {/* <motion.button
+                className="fixed top-4 right-4 z-20 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200"
+                onClick={handleAddQuest}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
             >
-                +
-            </motion.button>
-            <motion.button
-                className="w-12 h-12 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg flex items-center justify-center text-white hover:bg-purple-900/40 transition-all duration-200"
-                onClick={() => setScale(prev => Math.max(0.5, prev * 0.8))}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-            >
-                -
-            </motion.button>
-        </div>
+                + Add Quest
+            </motion.button> */}
 
-        {/* Demo add quest button */}
-        <motion.button
-            className="fixed top-4 right-4 z-20 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200"
-            onClick={handleAddQuest}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-        >
-            + Add Quest
-        </motion.button>
-
-        {/* Instructions */}
-        <div className="fixed bottom-6 right-6 z-20 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg p-3 max-w-xs">
-            <div className="text-xs text-gray-300 space-y-1">
-                <div>🖱️ Drag to explore galaxy</div>
-                <div>🔍 Scroll to zoom in/out</div>
-                <div>🎯 Click orbs to view quests</div>
+            {/* Instructions */}
+            <div className="fixed bottom-6 right-6 z-20 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg p-3 max-w-xs">
+                <div className="text-xs text-gray-300 space-y-1">
+                    <div>🖱️ Drag to explore galaxy</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>🎯 Click orbs to view quests</div>
+                </div>
             </div>
-        </div>
 
-        <QuestModal
-            quest={selectedQuest}
-            onClose={() => setSelectedQuest(null)}
-        />
-    </div>
-)
+            <QuestModal
+                quest={selectedQuest}
+                onClose={() => setSelectedQuest(null)}
+            />
+        </div>
+    )
 }

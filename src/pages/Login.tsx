@@ -19,7 +19,7 @@ const Login: React.FC = () => {
     }
     setError('');
     if (role === 'Student') {
-      navigate('/levelmap');
+      navigate('/onboarding');
     } else {
       navigate('/dashboard');
     }

@@ -196,11 +196,11 @@ export default function PetSelector() {
   };
 
   const handleContinueJourney = () => {
-    // Navigate to the next screen (you can add more routes later)
+    // Navigate to the begin screen after pet selection
     console.log("🎮 Continuing journey with pet:", confirmedPet?.name);
     console.log("📍 Current route: /pet-selector");
-    console.log("🎯 Next step: Add more routes to continue the journey");
-    // navigate('/next-screen') // Uncomment when you add more routes
+    console.log("🎯 Target route: /enter-code");
+    navigate('/enter-code');
   };
 
   return (

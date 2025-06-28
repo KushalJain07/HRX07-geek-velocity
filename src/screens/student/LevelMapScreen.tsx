@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import gsap from 'gsap'
 import { X, Lock, Star, Zap, Crown, Flame } from 'lucide-react'
 import { BottomTabNav } from "../BottomTab";
-import Header from "../Header"
-import GameHeader from '../Header';
+import GameHeader from "../Header"
 // import { Home, Trophy, Medal, User } from "lucide-react";
 
 
@@ -176,8 +175,8 @@ interface QuestOrbProps {
 }
 
 const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
-    const orbRef = useRef(null)
-    const glowRef = useRef(null)
+    const orbRef = useRef<HTMLDivElement>(null)
+    const glowRef = useRef<HTMLDivElement>(null)
 
     const difficultyConfig: Record<Difficulty, {
         gradient: string;
@@ -198,13 +197,13 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
             ring: 'border-cyan-400/30'
         },
         'Expert': {
-            gradient: 'from-purple-400 to-violet-600',
+            gradient: 'from-purple-400 to-indigo-600',
             glow: 'purple-400',
             icon: Crown,
             ring: 'border-purple-400/30'
         },
         'Master': {
-            gradient: 'from-red-400 to-rose-600',
+            gradient: 'from-red-400 to-pink-600',
             glow: 'red-400',
             icon: Flame,
             ring: 'border-red-400/30'
@@ -216,9 +215,9 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
             ring: 'border-yellow-400/30'
         },
         'Mythic': {
-            gradient: 'from-pink-400 to-fuchsia-600',
+            gradient: 'from-pink-400 to-purple-600',
             glow: 'pink-400',
-            icon: Flame,
+            icon: Crown,
             ring: 'border-pink-400/30'
         }
     }), [])
@@ -226,7 +225,6 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
     const config = difficultyConfig[quest.difficulty]
     const IconComponent = config.icon
 
-    // GSAP animations for complex effects
     useEffect(() => {
         if (!orbRef.current || !quest.unlocked) return
 
@@ -234,22 +232,27 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
         const glow = glowRef.current
 
         // Orbital rotation
-        gsap.to(orb.querySelector('.orbital-ring'), {
-            rotation: 360,
-            duration: 8 + index * 2,
-            repeat: -1,
-            ease: "none"
-        })
+        const orbitalRing = orb.querySelector('.orbital-ring') as HTMLElement
+        if (orbitalRing) {
+            gsap.to(orbitalRing, {
+                rotation: 360,
+                duration: 8 + index * 2,
+                repeat: -1,
+                ease: "none"
+            })
+        }
 
         // Pulsing glow effect
-        gsap.to(glow, {
-            scale: 1.2,
-            opacity: 0.8,
-            duration: 2,
-            repeat: -1,
-            yoyo: true,
-            ease: "power2.inOut"
-        })
+        if (glow) {
+            gsap.to(glow, {
+                scale: 1.2,
+                opacity: 0.8,
+                duration: 2,
+                repeat: -1,
+                yoyo: true,
+                ease: "power2.inOut"
+            })
+        }
 
         // Hover animation setup
         const handleMouseEnter = () => {
@@ -346,8 +349,8 @@ const QuestOrb = React.memo(({ quest, onClick, index }: QuestOrbProps) => {
     )
 })
 
-const QuestModal = ({ quest, onClose }) => {
-    const modalRef = useRef(null)
+const QuestModal = ({ quest, onClose }: { quest: Quest | null; onClose: () => void }) => {
+    const modalRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         if (quest && modalRef.current) {
@@ -361,7 +364,7 @@ const QuestModal = ({ quest, onClose }) => {
 
     if (!quest) return null
 
-    const difficultyColors = {
+    const difficultyColors: Record<Difficulty, string> = {
         'Novice': 'text-emerald-400 border-emerald-400/50 bg-emerald-400/10',
         'Adept': 'text-cyan-400 border-cyan-400/50 bg-cyan-400/10',
         'Expert': 'text-purple-400 border-purple-400/50 bg-purple-400/10',
@@ -413,7 +416,7 @@ const QuestModal = ({ quest, onClose }) => {
                         <div className="bg-black/30 rounded-lg p-3">
                             <h4 className="text-sm font-semibold text-white mb-2">Quest Rewards:</h4>
                             <div className="flex flex-wrap gap-2">
-                                {quest.rewards.map((reward, i) => (
+                                {quest.rewards.map((reward: string, i: number) => (
                                     <span key={i} className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 px-2 py-1 rounded text-xs border border-purple-500/30">
                                         {reward}
                                     </span>
@@ -428,21 +431,8 @@ const QuestModal = ({ quest, onClose }) => {
                             className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all duration-200 shadow-lg"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => {
-                                console.log(`Starting quest: ${quest.title}`)
-                                // Add your quest start logic here
-                                onClose()
-                            }}
                         >
                             Begin Quest
-                        </motion.button>
-                        <motion.button
-                            className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:border-gray-500 hover:text-white transition-all duration-200"
-                            onClick={onClose}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            Cancel
                         </motion.button>
                     </div>
                 </div>

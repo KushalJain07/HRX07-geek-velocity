@@ -26,7 +26,7 @@ const AppContent = () => {
             {/* <RouteIndicator /> */}
             <Routes>
                 {/* Default route redirects to login */}
-                <Route path="/" element={<Navigate to="/quiz" replace />} />
+                <Route path="/" element={<Navigate to="/login" replace />} />
                 
                 {/* Login route */}
                 <Route path="/login" element={<Login />} />
@@ -48,6 +48,7 @@ const AppContent = () => {
                 <Route path="/quest-detail" element={<QuestDetailComponent />} />
                 <Route path="/quiz" element={<QuizComponent />} />
                 <Route path="/Edu" element={<EdumonApp />} />
+                <Route path="/login" element={<Login />} />
             </Routes>
         </main>
     );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, RotateCw, Rocket } from 'lucide-react';
-import Alert from "@/components/alert";
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
 // Questions array
 const questions = [
@@ -25,9 +25,14 @@ const questions = [
         options: ['Earth', 'Mars', 'Jupiter'],
         answer: 'Mars',
     },
-]
+];
 
-export default function GamifiedQuizScreen() {
+const QuizScreen = () => {
+    const { questId } = useParams();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const onComplete = location.state?.onComplete;
+    
     const [current, setCurrent] = useState(0);
     const [score, setScore] = useState(0);
     const [selected, setSelected] = useState(null);
@@ -52,6 +57,15 @@ export default function GamifiedQuizScreen() {
         }
     };
 
+    const handleBackToMap = () => {
+        // Call completion callback if provided
+        if (onComplete && typeof onComplete === 'function') {
+            const passed = score >= Math.ceil(questions.length * 0.7); // 70% threshold
+            onComplete(passed);
+        }
+        navigate(`/level-map/${questId?.split('-')[0] || '1'}`);
+    };
+
     // Enhanced feedback with animated elements
     const feedback =
         score === 4 ? (
@@ -60,7 +74,9 @@ export default function GamifiedQuizScreen() {
                 animate={{ scale: 1 }}
                 className="flex flex-col gap-4"
             >
-                <Alert type="success" message="I see champ, You aced it! Cool" />
+                <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-3 text-green-300">
+                    I see champ, You aced it! Cool
+                </div>
                 <motion.div
                     animate={{ rotate: [0, 15, -15, 0] }}
                     transition={{ repeat: Infinity, duration: 1.5 }}
@@ -71,7 +87,9 @@ export default function GamifiedQuizScreen() {
             </motion.div>
         ) : score >= 2 ? (
             <div className="flex flex-col gap-4">
-                <Alert type="warning" message="⚡ Good job! Keep going" />
+                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-yellow-300">
+                    ⚡ Good job! Keep going
+                </div>
                 <motion.div
                     animate={{ y: [0, -10, 0] }}
                     transition={{ repeat: Infinity, duration: 1.5 }}
@@ -82,7 +100,9 @@ export default function GamifiedQuizScreen() {
             </div>
         ) : (
             <div className="flex flex-col gap-4">
-                <Alert type="error" message="🌀 Needs improvement. Try again!" />
+                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-300">
+                    🌊 Needs improvement. Try again!
+                </div>
                 <motion.div
                     animate={{ rotate: [0, 20, -20, 0] }}
                     transition={{ repeat: Infinity, duration: 1.5 }}
@@ -149,19 +169,33 @@ export default function GamifiedQuizScreen() {
                             <div className="h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent my-4" />
                             {feedback}
 
-                            <div className="flex justify-center gap-4">
+                            <div className="flex flex-col gap-3">
                                 <motion.button
-                                    onClick={handleRetry}
+                                    onClick={handleBackToMap}
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl text-white font-bold shadow-xl relative overflow-hidden"
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/0 opacity-0 hover:opacity-100 transition-opacity" />
-                                    <div className="flex items-center gap-2">
-                                        <RotateCw className="w-5 h-5" />
-                                        Retry Quest
+                                    <div className="flex items-center gap-2 justify-center">
+                                        Back to Map
                                     </div>
                                 </motion.button>
+                                
+                                {score < Math.ceil(questions.length * 0.7) && (
+                                    <motion.button
+                                        onClick={handleRetry}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="px-8 py-3 bg-gray-600 hover:bg-gray-700 rounded-xl text-white font-bold shadow-xl relative overflow-hidden"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/0 opacity-0 hover:opacity-100 transition-opacity" />
+                                        <div className="flex items-center gap-2 justify-center">
+                                            <RotateCw className="w-5 h-5" />
+                                            Retry Quest
+                                        </div>
+                                    </motion.button>
+                                )}
                             </div>
                         </motion.div>
                     ) : (
@@ -254,4 +288,6 @@ export default function GamifiedQuizScreen() {
             </motion.div>
         </div>
     );
-}
+};
+
+export default QuizScreen;

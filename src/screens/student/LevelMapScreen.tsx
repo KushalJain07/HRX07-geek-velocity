@@ -1,11 +1,9 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import gsap from 'gsap'
-import { X, Lock, Star, Zap, Crown, Flame } from 'lucide-react'
+import { X, Lock, Star, Zap, Crown, Flame, Home, Trophy, Medal, User } from 'lucide-react'
 import { BottomTabNav } from "../BottomTab";
 import GameHeader from "../Header"
-// import { Home, Trophy, Medal, User } from "lucide-react";
-
 
 // Mock backend data - replace with your actual API call
 const useQuestsData = () => {
@@ -18,7 +16,7 @@ const useQuestsData = () => {
             x: 15,
             y: 20,
             constellation: 'Orion Nebula',
-            difficulty: 'Novice',
+            difficulty: 'Novice' as const,
             rewards: ['Star Fragment', '100 XP'],
             estimatedTime: '15 min'
         },
@@ -30,7 +28,7 @@ const useQuestsData = () => {
             x: 40,
             y: 30,
             constellation: 'Andromeda',
-            difficulty: 'Adept',
+            difficulty: 'Adept' as const,
             rewards: ['Quantum Core', '250 XP'],
             estimatedTime: '25 min'
         },
@@ -42,7 +40,7 @@ const useQuestsData = () => {
             x: 70,
             y: 25,
             constellation: 'Phoenix',
-            difficulty: 'Expert',
+            difficulty: 'Expert' as const,
             rewards: ['Solar Essence', '500 XP'],
             estimatedTime: '35 min'
         },
@@ -54,7 +52,7 @@ const useQuestsData = () => {
             x: 25,
             y: 60,
             constellation: 'Draco',
-            difficulty: 'Master',
+            difficulty: 'Master' as const,
             rewards: ['Void Crystal', '750 XP'],
             estimatedTime: '45 min'
         },
@@ -66,7 +64,7 @@ const useQuestsData = () => {
             x: 60,
             y: 70,
             constellation: 'Lyra',
-            difficulty: 'Legend',
+            difficulty: 'Legend' as const,
             rewards: ['Harmony Stone', '1000 XP'],
             estimatedTime: '60 min'
         },
@@ -78,23 +76,10 @@ const useQuestsData = () => {
             x: 80,
             y: 50,
             constellation: 'Chronos',
-            difficulty: 'Mythic',
+            difficulty: 'Mythic' as const,
             rewards: ['Time Shard', '1500 XP'],
             estimatedTime: '90 min'
-        },
-        {
-            id: 9,
-            title: 'Cosmic Orchestra',
-            description: 'Conduct the symphony of pulsars and quasars. Harmonize with the universe itself.',
-            unlocked: false,
-            x: 60,
-            y: 70,
-            constellation: 'Lyra',
-            difficulty: 'Legend',
-            rewards: ['Harmony Stone', '1000 XP'],
-            estimatedTime: '60 min'
         }
-
     ])
 
     // Simulate adding new quests from backend
@@ -116,9 +101,6 @@ const useQuestsData = () => {
 
     return { quests, addQuest }
 }
-
-
-
 
 // Optimized star field with fewer elements
 const StarField = React.memo(() => {
@@ -385,7 +367,7 @@ const QuestModal = ({ quest, onClose }: { quest: Quest | null; onClose: () => vo
                 <div
                     ref={modalRef}
                     className="bg-slate-900/95 backdrop-blur-md border border-purple-500/30 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl"
-                    onClick={e => e.stopPropagation()}
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
@@ -441,14 +423,12 @@ const QuestModal = ({ quest, onClose }: { quest: Quest | null; onClose: () => vo
     )
 }
 
-
-
 // Main component
 export default function OptimizedCosmicMap() {
     const { quests, addQuest } = useQuestsData()
-    const [selectedQuest, setSelectedQuest] = useState(null)
+    const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
     const [scale, setScale] = useState(1)
-    const containerRef = useRef(null)
+    const containerRef = useRef<HTMLDivElement>(null)
 
     const [renderedIds, setRenderedIds] = useState(new Set());
 
@@ -459,10 +439,8 @@ export default function OptimizedCosmicMap() {
         setRenderedIds(newIds)
     }, [quests])
 
-    // ...rest of your existing logic like handleWheel, useEffect, render, etc.
-
     // Optimized wheel handler
-    const handleWheel = useCallback((e) => {
+    const handleWheel = useCallback((e: WheelEvent) => {
         e.preventDefault()
         const delta = e.deltaY > 0 ? 0.9 : 1.1
         setScale(prev => Math.max(0.5, Math.min(2.5, prev * delta)))
@@ -485,7 +463,7 @@ export default function OptimizedCosmicMap() {
             x: Math.random() * 80 + 10,
             y: Math.random() * 80 + 10,
             constellation: 'New Sector',
-            difficulty: 'Novice',
+            difficulty: 'Novice' as Difficulty,
             rewards: ['Mystery Reward', '100 XP'],
             estimatedTime: '20 min'
         }
@@ -542,40 +520,6 @@ export default function OptimizedCosmicMap() {
                     </div>
                 </div>
             </div>
-            <div>
-                {/* Main content */}
-                <BottomTabNav 
-                tabs={[
-                    {
-                        id: "home",
-                        label: "Home",
-                        icon: <Home className="w-4 h-4 sm:w-6 sm:h-6" />,
-                        path: "/",
-                        color: "primary",
-                    },
-                    {
-                        id: "leaderboard",
-                        label: "Leaderboard",
-                        icon: <Trophy className="w-4 h-4 sm:w-6 sm:h-6" />,
-                        path: "/leaderboard",
-                        color: "secondary",
-                    },
-                    {
-                        id: "achievements",
-                        label: "Achievements",
-                        icon: < Medal className="w-4 h-4 sm:w-6 sm:h-6" />,
-                        path: "/achievements",
-                        color: "success",
-                    },
-                    {
-                        id: "profile",
-                        label: "Profile",
-                        icon: <User className="w-4 h-4 sm:w-6 sm:h-6" />,
-                        path: "/profile",
-                        color: "info",
-                    },
-                ]} />
-                </div>
 
             {/* Zoom controls */}
             <div className="fixed bottom-6 left-6 z-20 flex flex-col gap-2 ">
@@ -596,16 +540,6 @@ export default function OptimizedCosmicMap() {
                     -
                 </motion.button>
             </div>
-
-            {/* Demo add quest button */}
-            {/* <motion.button
-                className="fixed top-4 right-4 z-20 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-green-500 hover:to-emerald-500 transition-all duration-200"
-                onClick={handleAddQuest}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-            >
-                + Add Quest
-            </motion.button> */}
 
             {/* Instructions */}
             <div className="fixed bottom-6 right-6 z-20 bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-lg p-3 max-w-xs">

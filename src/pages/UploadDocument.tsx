@@ -1,6 +1,8 @@
 ﻿import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Upload, FileText, Video, Image, File, X } from "lucide-react";
+import { uploadService } from "../services/api";
+import type { UploadMetadata } from "../services/api";
 
 interface UploadedDocument {
   id: number;
@@ -11,6 +13,8 @@ interface UploadedDocument {
   fileSize: string;
   uploadDate: string;
   classroomId: number;
+  fileUrl?: string;
+  gcsFileName?: string;
 }
 
 const UploadDocument: React.FC = () => {
@@ -23,6 +27,8 @@ const UploadDocument: React.FC = () => {
   const [details, setDetails] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [uploadMessage, setUploadMessage] = useState("");
 
   const uploadTypes = [
     { type: "video" as const, label: "Video", icon: Video, color: "#ef4444" },
@@ -52,29 +58,69 @@ const UploadDocument: React.FC = () => {
     }
 
     setIsUploading(true);
+    setUploadStatus("uploading");
+    setUploadMessage("Uploading file to server...");
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const newDocument: UploadedDocument = {
-        id: Date.now(),
-        type: uploadType as "video" | "pdf" | "doc" | "image" | "other",
-        title: generateTitle(),
+      // Prepare metadata for upload
+      const metadata: UploadMetadata = {
+        uploadType,
+        unitModule,
+        chapterTopic,
+        documentNumber,
         details,
-        fileName: selectedFile.name,
-        fileSize: `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`,
-        uploadDate: new Date().toISOString(),
-        classroomId: Number(id)
+        classroomId: Number(id),
+        title: generateTitle()
       };
 
-      const existingDocs = JSON.parse(localStorage.getItem("uploadedDocuments") || "[]");
-      const updatedDocs = [...existingDocs, newDocument];
-      localStorage.setItem("uploadedDocuments", JSON.stringify(updatedDocs));
+      // Upload file using the API service
+      const result = await uploadService.uploadToGCS(selectedFile, metadata);
 
-      navigate(`/classroom/${id}`);
+      if (result.success) {
+        // File uploaded successfully, now save document metadata
+        const newDocument: UploadedDocument = {
+          id: Date.now(),
+          type: uploadType as "video" | "pdf" | "doc" | "image" | "other",
+          title: generateTitle(),
+          details,
+          fileName: selectedFile.name,
+          fileSize: `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`,
+          uploadDate: new Date().toISOString(),
+          classroomId: Number(id),
+          // Add backend response data if available
+          fileUrl: result.fileUrl || undefined,
+          gcsFileName: result.gcsFileName || undefined
+        };
+
+        // Save to localStorage (you might want to also save to your backend database)
+        const existingDocs = JSON.parse(localStorage.getItem("uploadedDocuments") || "[]");
+        const updatedDocs = [...existingDocs, newDocument];
+        localStorage.setItem("uploadedDocuments", JSON.stringify(updatedDocs));
+
+        setUploadStatus("success");
+        setUploadMessage(result.message || "File uploaded successfully!");
+        
+        // Navigate back to classroom after a short delay
+        setTimeout(() => {
+          navigate(`/classroom/${id}`);
+        }, 1500);
+      } else {
+        throw new Error(result.error || "Upload failed");
+      }
     } catch (error) {
       console.error("Upload failed:", error);
-      alert("Upload failed. Please try again.");
+      
+      let errorMessage = "Upload failed. Please try again.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      setUploadStatus("error");
+      setUploadMessage(errorMessage);
+      
+      // Show error alert
+      alert(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -89,6 +135,32 @@ const UploadDocument: React.FC = () => {
     setSelectedFile(null);
   };
 
+  const getStatusColor = () => {
+    switch (uploadStatus) {
+      case "success":
+        return "#10b981";
+      case "error":
+        return "#ef4444";
+      case "uploading":
+        return "#3b82f6";
+      default:
+        return "#6b7280";
+    }
+  };
+
+  const getStatusIcon = () => {
+    switch (uploadStatus) {
+      case "success":
+        return "✓";
+      case "error":
+        return "✗";
+      case "uploading":
+        return "⟳";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div style={{ padding: "1rem", maxWidth: "800px", margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
@@ -100,6 +172,26 @@ const UploadDocument: React.FC = () => {
         </button>
         <h1>Upload Document</h1>
       </div>
+
+      {/* Upload Status Display */}
+      {uploadStatus !== "idle" && (
+        <div style={{ 
+          background: uploadStatus === "success" ? "#d1fae5" : 
+                      uploadStatus === "error" ? "#fee2e2" : "#dbeafe",
+          border: `1px solid ${getStatusColor()}`,
+          color: uploadStatus === "success" ? "#065f46" : 
+                 uploadStatus === "error" ? "#991b1b" : "#1e40af",
+          padding: "1rem",
+          borderRadius: "0.5rem",
+          marginBottom: "1rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem"
+        }}>
+          <span style={{ fontSize: "1.2rem" }}>{getStatusIcon()}</span>
+          <span>{uploadMessage}</span>
+        </div>
+      )}
 
       <div style={{ background: "white", padding: "2rem", borderRadius: "1rem", marginBottom: "2rem" }}>
         <h2>Select Upload Type</h2>

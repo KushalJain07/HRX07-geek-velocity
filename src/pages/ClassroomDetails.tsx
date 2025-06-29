@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getClassrooms, setClassrooms } from "./mockData";
+import { uploadService } from "../services/api";
+import type { UploadMetadata } from "../services/api";
 import {
   ArrowLeft,
   Settings,
@@ -32,6 +34,8 @@ interface Mission {
   fileName: string;
   classroomId: number;
   createdAt: string;
+  fileUrl?: string;
+  gcsFileName?: string;
 }
 
 const ClassroomDetails: React.FC = () => {
@@ -48,6 +52,9 @@ const ClassroomDetails: React.FC = () => {
   const [showViewMissions, setShowViewMissions] = useState(false);
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [uploadMessage, setUploadMessage] = useState("");
 
   // Create Mission form state
   const [missionTitle, setMissionTitle] = useState("");
@@ -128,7 +135,7 @@ const ClassroomDetails: React.FC = () => {
     }
   };
 
-  const createMission = () => {
+  const createMission = async () => {
     const hasValidTypeValue =
       (missionType === "quizzes" && quizzesCount.trim()) ||
       (missionType === "videos" && videosCount.trim()) ||
@@ -146,38 +153,92 @@ const ClassroomDetails: React.FC = () => {
       return;
     }
 
-    const newMission: Mission = {
-      id: Date.now(),
-      title: missionTitle,
-      type: missionType,
-      typeSubOption: missionType,
-      typeValue:
-        missionType === "quizzes"
-          ? quizzesCount
-          : missionType === "videos"
-          ? videosCount
-          : watchTime,
-      rewardType: rewardType,
-      rewardValue: rewardValue,
-      uploadedFile: uploadedFile,
-      fileName: fileName,
-      classroomId: Number(id),
-      createdAt: new Date().toISOString(),
-    };
-    const updatedMissions = [...missions, newMission];
-    setMissions(updatedMissions);
+    setIsUploading(true);
+    setUploadStatus("uploading");
+    setUploadMessage("Uploading mission file...");
 
-    // Reset form and close dropdown
-    setMissionTitle("");
-    setMissionType("");
-    setQuizzesCount("");
-    setVideosCount("");
-    setWatchTime("");
-    setRewardType("");
-    setRewardValue("");
-    setUploadedFile(null);
-    setFileName("");
-    setShowCreateMission(false);
+    try {
+      // Prepare metadata for upload
+      const metadata: UploadMetadata = {
+        uploadType: "other", // Default to other for mission files
+        unitModule: classroom?.title || "Mission",
+        chapterTopic: missionTitle,
+        documentNumber: "1",
+        details: `Mission: ${missionTitle} - Type: ${missionType} - Reward: ${rewardType} ${rewardValue}`,
+        classroomId: Number(id),
+        title: `${missionTitle} - Mission File`
+      };
+
+      // Upload file using the API service
+      const result = await uploadService.uploadToGCS(uploadedFile, metadata);
+
+      if (result.success) {
+        // File uploaded successfully, now create mission
+        const newMission: Mission = {
+          id: Date.now(),
+          title: missionTitle,
+          type: missionType,
+          typeSubOption: missionType,
+          typeValue:
+            missionType === "quizzes"
+              ? quizzesCount
+              : missionType === "videos"
+              ? videosCount
+              : watchTime,
+          rewardType: rewardType,
+          rewardValue: rewardValue,
+          uploadedFile: uploadedFile,
+          fileName: fileName,
+          classroomId: Number(id),
+          createdAt: new Date().toISOString(),
+          // Add backend response data
+          fileUrl: result.fileUrl || undefined,
+          gcsFileName: result.gcsFileName || undefined
+        };
+
+        const updatedMissions = [...missions, newMission];
+        setMissions(updatedMissions);
+
+        setUploadStatus("success");
+        setUploadMessage("Mission created successfully!");
+
+        // Reset form and close dropdown
+        setMissionTitle("");
+        setMissionType("");
+        setQuizzesCount("");
+        setVideosCount("");
+        setWatchTime("");
+        setRewardType("");
+        setRewardValue("");
+        setUploadedFile(null);
+        setFileName("");
+        setShowCreateMission(false);
+
+        // Clear success message after a delay
+        setTimeout(() => {
+          setUploadStatus("idle");
+          setUploadMessage("");
+        }, 3000);
+      } else {
+        throw new Error(result.error || "Upload failed");
+      }
+    } catch (error) {
+      console.error("Mission creation failed:", error);
+      
+      let errorMessage = "Mission creation failed. Please try again.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      setUploadStatus("error");
+      setUploadMessage(errorMessage);
+      
+      // Show error alert
+      alert(errorMessage);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Reset sub-options when mission type changes
@@ -225,6 +286,32 @@ const ClassroomDetails: React.FC = () => {
   const toggleCreateMission = () => {
     setShowCreateMission(!showCreateMission);
     setShowViewMissions(false);
+  };
+
+  const getStatusColor = () => {
+    switch (uploadStatus) {
+      case "success":
+        return "#10b981";
+      case "error":
+        return "#ef4444";
+      case "uploading":
+        return "#3b82f6";
+      default:
+        return "#6b7280";
+    }
+  };
+
+  const getStatusIcon = () => {
+    switch (uploadStatus) {
+      case "success":
+        return "✓";
+      case "error":
+        return "✗";
+      case "uploading":
+        return "⟳";
+      default:
+        return "";
+    }
   };
 
   if (!classroom) {
@@ -549,8 +636,40 @@ const ClassroomDetails: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <button onClick={createMission} className="submit-btn">
-                  Create Mission
+                
+                {/* Upload Status Display */}
+                {uploadStatus !== "idle" && (
+                  <div className="upload-status-display" style={{ 
+                    background: uploadStatus === "success" ? "#d1fae5" : 
+                                uploadStatus === "error" ? "#fee2e2" : "#dbeafe",
+                    border: `1px solid ${getStatusColor()}`,
+                    color: uploadStatus === "success" ? "#065f46" : 
+                           uploadStatus === "error" ? "#991b1b" : "#1e40af",
+                    padding: "0.75rem",
+                    borderRadius: "0.5rem",
+                    marginBottom: "1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    fontSize: "0.875rem"
+                  }}>
+                    <span style={{ fontSize: "1rem" }}>
+                      {getStatusIcon()}
+                    </span>
+                    <span>{uploadMessage}</span>
+                  </div>
+                )}
+                
+                <button 
+                  onClick={createMission} 
+                  className="submit-btn"
+                  disabled={isUploading}
+                  style={{
+                    opacity: isUploading ? 0.6 : 1,
+                    cursor: isUploading ? "not-allowed" : "pointer"
+                  }}
+                >
+                  {isUploading ? "Creating Mission..." : "Create Mission"}
                 </button>
               </div>
             </div>
@@ -619,6 +738,24 @@ const ClassroomDetails: React.FC = () => {
                             <strong>File:</strong>{" "}
                             {mission.fileName || "No file uploaded"}
                           </div>
+                          {mission.fileUrl && (
+                            <div className="detail-row">
+                              <strong>File URL:</strong>{" "}
+                              <a 
+                                href={mission.fileUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{ color: "#3b82f6", textDecoration: "underline" }}
+                              >
+                                View File
+                              </a>
+                            </div>
+                          )}
+                          {mission.gcsFileName && (
+                            <div className="detail-row">
+                              <strong>GCS File:</strong> {mission.gcsFileName}
+                            </div>
+                          )}
                           <div className="detail-row">
                             <strong>Created:</strong>{" "}
                             {new Date(mission.createdAt).toLocaleDateString()}

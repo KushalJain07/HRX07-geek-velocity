@@ -6,7 +6,7 @@ import teacherImg from '../assets/teacher.png';
 import iconImg from '../assets/icon.png';
 
 // Define the backend server URL
-const API_URL = 'http://localhost:5001/api/auth';
+const API_URL = 'https://game-backend-an7s.onrender.com/api/auth';
 
 const Login: React.FC = () => {
   const [mode, setMode] = useState<'login' | 'signup'>('login');

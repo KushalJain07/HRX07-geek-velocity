@@ -123,6 +123,14 @@ const CreateClass: React.FC = () => {
   const handleCreateClass = (e: React.FormEvent) => {
     e.preventDefault();
     if (!className.trim() || !subject.trim()) return;
+    
+    // Generate random 8-digit hex code
+    const generateClassCode = () => {
+      return Math.random().toString(16).substring(2, 10).toUpperCase();
+    };
+    
+    const classCode = generateClassCode();
+    
     const classrooms = getClassrooms();
     const newClassroom = {
       id: Date.now(),
@@ -139,6 +147,7 @@ const CreateClass: React.FC = () => {
       classSchedule,
       classLocation,
       classTags,
+      classCode: classCode, // Add the generated class code
     };
     setClassrooms([...classrooms, newClassroom]);
     navigate("/dashboard");

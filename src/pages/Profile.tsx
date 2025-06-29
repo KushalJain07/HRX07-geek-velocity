@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Home, Users, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'profile'>('profile');
   const [profileTab, setProfileTab] = useState<'profile' | 'settings' | 'notifications'>('profile');
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -16,8 +18,8 @@ const Profile: React.FC = () => {
   });
 
   const teacherData = {
-    name: "Sarah Johnson",
-    email: "sarah.johnson@school.edu",
+    name: user?.name || "Sarah Johnson",
+    email: user?.email || "sarah.johnson@school.edu",
     phone: "+1 (555) 123-4567",
     department: "Mathematics",
     grade: "9th Grade",
@@ -36,7 +38,8 @@ const Profile: React.FC = () => {
   };
 
   const handleLogout = () => {
-    navigate('/');
+    logout();
+    navigate('/login');
   };
 
   const handleNav = (tab: 'dashboard' | 'students' | 'profile') => {

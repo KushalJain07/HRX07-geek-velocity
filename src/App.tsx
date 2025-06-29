@@ -16,6 +16,9 @@ import Onboarding from './screens/student/Onboarding.jsx';
 import EdumonApp from './screens/student/Edumon.tsx';
 import StudentDashboard from './pages/StudentDashboard';
 import Marketplace from './pages/Marketplace';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
 // Type assertions for JSX files
 const OnboardingComponent = Onboarding as React.ComponentType;
 const QuestDetailComponent = QuestDetailScreen as React.ComponentType;
@@ -33,25 +36,89 @@ const AppContent = () => {
                 {/* Login route */}
                 <Route path="/login" element={<Login />} />
                 
-                {/* Teacher routes */}
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/classroom/:id" element={<ClassroomDetails />} />
-                <Route path="/create-class" element={<CreateClass />} />
-                <Route path="/students" element={<Students />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/upload-document/:id" element={<UploadDocument />} />
+                {/* Teacher routes - Protected */}
+                <Route path="/dashboard" element={
+                    <ProtectedRoute allowedRoles={['Teacher']}>
+                        <Dashboard />
+                    </ProtectedRoute>
+                } />
+                <Route path="/classroom/:id" element={
+                    <ProtectedRoute allowedRoles={['Teacher']}>
+                        <ClassroomDetails />
+                    </ProtectedRoute>
+                } />
+                <Route path="/create-class" element={
+                    <ProtectedRoute allowedRoles={['Teacher']}>
+                        <CreateClass />
+                    </ProtectedRoute>
+                } />
+                <Route path="/students" element={
+                    <ProtectedRoute allowedRoles={['Teacher']}>
+                        <Students />
+                    </ProtectedRoute>
+                } />
+                <Route path="/profile" element={
+                    <ProtectedRoute allowedRoles={['Teacher']}>
+                        <Profile />
+                    </ProtectedRoute>
+                } />
+                <Route path="/upload-document/:id" element={
+                    <ProtectedRoute allowedRoles={['Teacher']}>
+                        <UploadDocument />
+                    </ProtectedRoute>
+                } />
                 
-                {/* Student routes */}
-                <Route path="/onboarding" element={<OnboardingComponent />} />
-                <Route path="/pet-selector" element={<PetSelector />} />
-                <Route path="/enter-code" element={<EnterCodeScreen />} />
-                <Route path="/level-map/:classId" element={<OptimizedCosmicMap />} />
-                <Route path="/levelmap/:classId" element={<OptimizedCosmicMap />} />
-                <Route path="/quest-detail" element={<QuestDetailComponent />} />
-                <Route path="/quiz/:questId" element={<QuizComponent />} />
-                <Route path="/marketplace" element={<Marketplace />} />
-                <Route path="/Edu" element={<EdumonApp />} />
-                <Route path="/student-dashboard" element={<StudentDashboard />} />
+                {/* Student routes - Protected */}
+                <Route path="/onboarding" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <OnboardingComponent />
+                    </ProtectedRoute>
+                } />
+                <Route path="/pet-selector" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <PetSelector />
+                    </ProtectedRoute>
+                } />
+                <Route path="/enter-code" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <EnterCodeScreen />
+                    </ProtectedRoute>
+                } />
+                <Route path="/level-map/:classId" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <OptimizedCosmicMap />
+                    </ProtectedRoute>
+                } />
+                <Route path="/levelmap/:classId" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <OptimizedCosmicMap />
+                    </ProtectedRoute>
+                } />
+                <Route path="/quest-detail" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <QuestDetailComponent />
+                    </ProtectedRoute>
+                } />
+                <Route path="/quiz/:questId" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <QuizComponent />
+                    </ProtectedRoute>
+                } />
+                <Route path="/marketplace" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <Marketplace />
+                    </ProtectedRoute>
+                } />
+                <Route path="/Edu" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <EdumonApp />
+                    </ProtectedRoute>
+                } />
+                <Route path="/student-dashboard" element={
+                    <ProtectedRoute allowedRoles={['Student']}>
+                        <StudentDashboard />
+                    </ProtectedRoute>
+                } />
             </Routes>
         </main>
     );
@@ -59,9 +126,11 @@ const AppContent = () => {
 
 function App() {
     return (
-        <BrowserRouter>
-            <AppContent />
-        </BrowserRouter>
+        <AuthProvider>
+            <BrowserRouter>
+                <AppContent />
+            </BrowserRouter>
+        </AuthProvider>
     )
 }
 

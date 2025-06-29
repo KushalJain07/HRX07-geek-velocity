@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios
 import '../styles/commonStyles.css';
 import teacherImg from '../assets/teacher.png';
 import iconImg from '../assets/icon.png';
+import { useAuth } from '../contexts/AuthContext';
 
 // Define the backend server URL
 const API_URL = 'https://game-backend-an7s.onrender.com/api/auth';
@@ -17,6 +18,14 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false); // Add loading state
   const navigate = useNavigate();
+  const { isLoggedIn, login } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/dashboard');
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +70,17 @@ const Login: React.FC = () => {
         });
         console.log(response.data.message);
         
+        // Save user data to AuthContext
+        const userData = {
+          id: response.data.user.id,
+          email: response.data.user.email,
+          name: response.data.user.name || email.split('@')[0],
+          role: response.data.user.role,
+        };
+        
+        login(userData);
+        
+        // Navigate based on role
         if (response.data.user.role === 'Student') {
           navigate('/onboarding');
         } else {

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Search, Users, Home, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { students } from './mockData';
+import React, { useState, useEffect } from 'react';
+import { Search, Users } from 'lucide-react';
+import DashboardNav from './DashboardNav';
 import { TextShimmer } from '@/components/ui/text-shimmer';
+import axios from 'axios';
 
 const StudentCard: React.FC<{ student: any }> = ({ student }) => (
   <div className="student-card">
@@ -12,10 +12,8 @@ const StudentCard: React.FC<{ student: any }> = ({ student }) => (
     <div className="student-info">
       <h3 className="student-name">{student.name}</h3>
       <p className="student-email">{student.email}</p>
-      <div className="student-status-container">
-        <span className={`status-badge status-${student.status}`}>
-          {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
-        </span>
+      <div className="student-xp-container">
+        <span className="xp-badge">XP: {student.xp}</span>
       </div>
     </div>
   </div>
@@ -24,15 +22,25 @@ const StudentCard: React.FC<{ student: any }> = ({ student }) => (
 const Students: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'profile'>('students');
-  const navigate = useNavigate();
+  const [students, setStudents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const handleNav = (tab: 'dashboard' | 'students' | 'profile') => {
-    setActiveTab(tab);
-    if (tab === 'dashboard') navigate('/dashboard');
-    if (tab === 'students') navigate('/students');
-    if (tab === 'profile') navigate('/profile');
-  };
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await axios.get('http://localhost:5001/api/students/leaderboard');
+        setStudents(res.data);
+      } catch (err) {
+        setError('Failed to fetch students.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -40,27 +48,12 @@ const Students: React.FC = () => {
     return matchesSearch;
   });
 
+  // Table view: sort by xp descending
+  const sortedStudents = [...filteredStudents].sort((a, b) => b.xp - a.xp);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden pb-24">
-      {/* Animated Space Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {[...Array(80)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full opacity-20 animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`
-            }}
-          />
-        ))}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
-        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
-      <div className="relative z-10 dashboard-container">
+    <>
+      <div className="dashboard-container">
         <div className="main-content">
           <h2 className="welcome-title">
             <Users size={24} style={{ color: '#6366f1' }} />
@@ -110,11 +103,15 @@ const Students: React.FC = () => {
             {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} found
           </div>
 
-          {filteredStudents.length > 0 ? (
+          {loading ? (
+            <div className="no-students">Loading...</div>
+          ) : error ? (
+            <div className="no-students">{error}</div>
+          ) : filteredStudents.length > 0 ? (
             viewMode === 'cards' ? (
               <div className="students-list">
                 {filteredStudents.map((student) => (
-                  <StudentCard key={student.id} student={student} />
+                  <StudentCard key={student._id || student.id} student={student} />
                 ))}
               </div>
             ) : (
@@ -123,19 +120,15 @@ const Students: React.FC = () => {
                   <tr>
                     <th>Name</th>
                     <th>Email</th>
-                    <th>Status</th>
+                    <th>XP</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map(student => (
-                    <tr key={student.id}>
+                  {sortedStudents.map(student => (
+                    <tr key={student._id || student.id}>
                       <td style={{ fontWeight: 500 }}>{student.name}</td>
                       <td style={{ color: '#6b7280' }}>{student.email}</td>
-                      <td>
-                        <span className={`status-badge status-${student.status}`}>
-                          {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
-                        </span>
-                      </td>
+                      <td style={{ color: '#6366f1', fontWeight: 600 }}>{student.xp}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -149,37 +142,12 @@ const Students: React.FC = () => {
             </div>
           )}
         </div>
+        <DashboardNav active="Students" />
       </div>
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 w-full z-20 bg-black/60 backdrop-blur-xl border-t border-white/10 flex justify-center transition-all duration-500">
-        <div className="flex w-full max-w-md mx-auto">
-          <button
-            onClick={() => handleNav('dashboard')}
-            className={`flex-1 flex flex-col items-center py-3 transition-all ${activeTab === 'dashboard' ? 'text-indigo-400 scale-110' : 'text-gray-300 hover:text-white'}`}
-          >
-            <Home className="h-6 w-6 mb-1" />
-            <span className="text-xs font-medium">Dashboard</span>
-          </button>
-          <button
-            onClick={() => handleNav('students')}
-            className={`flex-1 flex flex-col items-center py-3 transition-all ${activeTab === 'students' ? 'text-cyan-400 scale-110' : 'text-gray-300 hover:text-white'}`}
-          >
-            <Users className="h-6 w-6 mb-1" />
-            <span className="text-xs font-medium">Students</span>
-          </button>
-          <button
-            onClick={() => handleNav('profile')}
-            className={`flex-1 flex flex-col items-center py-3 transition-all ${activeTab === 'profile' ? 'text-pink-400 scale-110' : 'text-gray-300 hover:text-white'}`}
-          >
-            <User className="h-6 w-6 mb-1" />
-            <span className="text-xs font-medium">Profile</span>
-          </button>
-        </div>
-      </nav>
       <style>{`
         .dashboard-container {
           min-height: 100vh;
-          background: transparent;
+          background-color: #f8f9fa;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         .main-content {
@@ -189,14 +157,14 @@ const Students: React.FC = () => {
         .welcome-title {
           font-size: 1.5rem;
           font-weight: 700;
-          color: white;
+          color: #1f2937;
           margin: 0 0 0.5rem 0;
           display: flex;
           align-items: center;
           gap: 0.5rem;
         }
         .welcome-subtitle {
-          color: #cbd5e1;
+          color: #6b7280;
           margin: 0 0 1.5rem 0;
           font-size: 1rem;
         }
@@ -213,28 +181,23 @@ const Students: React.FC = () => {
         .search-input {
           width: 100%;
           padding: 0.875rem 1rem 0.875rem 3rem;
-          border: 2px solid rgba(255, 255, 255, 0.2);
+          border: 2px solid #e5e7eb;
           border-radius: 0.75rem;
           font-size: 1rem;
           outline: none;
           transition: border-color 0.2s;
-          background-color: rgba(0, 0, 0, 0.3);
-          color: white;
-          backdrop-blur-sm;
+          background-color: white;
           box-sizing: border-box;
         }
         .search-input:focus {
-          border-color: #8b5cf6;
-        }
-        .search-input::placeholder {
-          color: #cbd5e1;
+          border-color: #6366f1;
         }
         .search-icon {
           position: absolute;
           left: 1rem;
           top: 50%;
           transform: translateY(-50%);
-          color: #cbd5e1;
+          color: #9ca3af;
         }
         .view-toggle {
           display: flex;
@@ -243,23 +206,21 @@ const Students: React.FC = () => {
         }
         .view-button {
           padding: 0.5rem 1rem;
-          border: 2px solid rgba(255, 255, 255, 0.2);
-          background-color: rgba(0, 0, 0, 0.3);
-          color: white;
+          border: 2px solid #e5e7eb;
+          background-color: white;
           border-radius: 0.5rem;
           cursor: pointer;
           font-size: 0.875rem;
           transition: all 0.2s;
-          backdrop-blur-sm;
         }
         .view-button.active {
-          border-color: #8b5cf6;
-          background-color: rgba(139, 92, 246, 0.3);
+          border-color: #6366f1;
+          background-color: #6366f1;
           color: white;
         }
         .students-count {
           margin-bottom: 1rem;
-          color: #cbd5e1;
+          color: #6b7280;
           font-size: 0.875rem;
         }
         .students-list {
@@ -268,27 +229,25 @@ const Students: React.FC = () => {
           gap: 1rem;
         }
         .student-card {
-          background-color: rgba(0, 0, 0, 0.3);
-          backdrop-blur-sm;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background-color: white;
           border-radius: 1rem;
           padding: 1rem;
           display: flex;
           align-items: flex-start;
           gap: 1rem;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
           transition: all 0.2s;
           cursor: pointer;
         }
         .student-card:hover {
-          box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
           transform: translateY(-1px);
         }
         .student-avatar {
           width: 50px;
           height: 50px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -304,63 +263,47 @@ const Students: React.FC = () => {
         .student-name {
           font-size: 1.125rem;
           font-weight: 600;
-          color: white;
+          color: #1f2937;
           margin: 0 0 0.25rem 0;
         }
         .student-email {
-          color: #cbd5e1;
+          color: #6b7280;
           font-size: 0.875rem;
           margin: 0 0 0.5rem 0;
         }
-        .student-status-container {
+        .student-xp-container {
           display: flex;
           align-items: center;
         }
-        .status-badge {
+        .xp-badge {
           display: inline-block;
           padding: 4px 12px;
           border-radius: 12px;
           font-size: 13px;
           font-weight: 600;
-        }
-        .status-active {
-          background: rgba(34, 197, 94, 0.2);
-          color: #4ade80;
-          border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-        .status-pending {
-          background: rgba(251, 191, 36, 0.2);
-          color: #fbbf24;
-          border: 1px solid rgba(251, 191, 36, 0.3);
-        }
-        .status-inactive {
-          background: rgba(239, 68, 68, 0.2);
-          color: #f87171;
-          border: 1px solid rgba(239, 68, 68, 0.3);
+          background: #e0e7ff;
+          color: #3730a3;
         }
         .students-table {
           width: 100%;
           border-collapse: collapse;
-          background: rgba(0, 0, 0, 0.3);
-          backdrop-blur-sm;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: white;
           border-radius: 12px;
           overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
         .students-table thead {
-          background: rgba(0, 0, 0, 0.4);
+          background: #f3f4f6;
           text-align: left;
         }
         .students-table th {
           padding: 12px 16px;
           font-weight: 600;
-          color: white;
+          color: #374151;
         }
         .students-table td {
           padding: 10px 16px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          color: #cbd5e1;
+          border-bottom: 1px solid #f1f1f1;
         }
         .students-table tr:last-child td {
           border-bottom: none;
@@ -368,11 +311,53 @@ const Students: React.FC = () => {
         .no-students {
           text-align: center;
           padding: 3rem 1rem;
-          color: #cbd5e1;
+          color: #6b7280;
         }
         .no-students-icon {
           font-size: 3rem;
           margin-bottom: 1rem;
+        }
+        /* Bottom nav styles to match all dashboard pages */
+        .bottom-nav {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(255,255,255,0.98);
+          border-top: 1px solid #e5e7eb;
+          padding: 0.75rem 0 0.5rem 0;
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          z-index: 50;
+          box-shadow: 0 -2px 12px 0 rgba(0,0,0,0.04);
+        }
+        .nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.15rem;
+          padding: 0.5rem 0.75rem;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 0.8rem;
+          font-weight: 500;
+          color: #9ca3af;
+          transition: color 0.2s, background 0.2s;
+          border-radius: 10px;
+        }
+        .nav-item.active {
+          color: #6366f1;
+          background: rgba(99,102,241,0.08);
+        }
+        .nav-item:not(.active):hover {
+          color: #6366f1;
+          background: rgba(99,102,241,0.04);
+        }
+        .nav-label {
+          font-size: 0.78rem;
+          margin-top: 2px;
         }
         @media (max-width: 640px) {
           .search-filter-container {
@@ -413,7 +398,7 @@ const Students: React.FC = () => {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import gsap from 'gsap'
 import { X, Lock, Star, Zap, Crown, Flame, ArrowLeft, Trophy, TrendingUp, CheckCircle } from 'lucide-react'
 import GameHeader from '../Header'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getQuestsForClass } from '../../pages/mockData'
 import type { Quest } from '../../pages/mockData'
 import QuestDetailScreen from './QuestDetailScreen.jsx'
@@ -337,7 +337,11 @@ const QuestOrb = React.memo(({ quest, onClick, index, isCompleted }: QuestOrbPro
                     {/* Content */}
                     <div className="absolute inset-0 flex items-center justify-center">
                         {quest.unlocked ? (
-                            <IconComponent className="w-6 h-6 text-white" />
+                            isCompleted ? (
+                                <CheckCircle className="w-6 h-6 text-white" />
+                            ) : (
+                                <IconComponent className="w-6 h-6 text-white" />
+                            )
                         ) : (
                             <Lock className="w-5 h-5 text-gray-400" />
                         )}
@@ -347,6 +351,13 @@ const QuestOrb = React.memo(({ quest, onClick, index, isCompleted }: QuestOrbPro
                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-black/80 text-white text-xs font-bold rounded-full flex items-center justify-center border border-white/20">
                         {quest.id}
                     </div>
+
+                    {/* Completion indicator */}
+                    {isCompleted && (
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center border-2 border-white shadow-lg">
+                            <CheckCircle className="w-4 h-4" />
+                        </div>
+                    )}
                 </div>
                 <div></div>
 
@@ -483,17 +494,56 @@ const QuestModal = ({ quest, onClose, isCompleted, onBeginQuest }: { quest: Ques
 
 // Main component
 export default function OptimizedCosmicMap() {
-    const { classId } = useParams<{ classId: string }>();
+    const { classId } = useParams();
     const navigate = useNavigate();
-    const [quests, setQuests] = useState<Quest[]>(() => getQuestsForClass(classId || '1'));
-    const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
-    const [scale, setScale] = useState(1)
-    const containerRef = useRef(null)
+    const location = useLocation();
+    
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [scale, setScale] = useState(1);
+    const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
     const [showQuestDetail, setShowQuestDetail] = useState(false);
     const [showQuiz, setShowQuiz] = useState(false);
-    const [classProgress, setClassProgress] = useState<ClassProgress>(() => getClassProgress(classId || '1'));
+    const [classProgress, setClassProgress] = useState<ClassProgress>(getClassProgress(classId || '1'));
     const [showLevelUp, setShowLevelUp] = useState(false);
     const [previousLevel, setPreviousLevel] = useState(1);
+    const [showCompletionNotification, setShowCompletionNotification] = useState(false);
+    const [completedQuestTitle, setCompletedQuestTitle] = useState('');
+
+    const { quests, addQuest } = useQuestsData();
+
+    // Handle quest completion from quiz navigation
+    useEffect(() => {
+        if (location.state?.questCompleted && location.state?.questId) {
+            const questId = parseInt(location.state.questId);
+            if (questId && !classProgress.completedQuests.includes(questId)) {
+                const quest = quests.find(q => q.id === questId);
+                if (!quest) return;
+                
+                // Extract XP from quest rewards (assuming format like "100 XP")
+                const xpMatch = quest.rewards.find(reward => reward.includes('XP'));
+                const xpReward = xpMatch ? parseInt(xpMatch.split(' ')[0]) : 50;
+                
+                const oldLevel = classProgress.level;
+                const newProgress = addQuestXP(classId || '1', questId, xpReward);
+                setClassProgress(newProgress);
+                
+                // Show completion notification
+                setCompletedQuestTitle(quest.title);
+                setShowCompletionNotification(true);
+                setTimeout(() => setShowCompletionNotification(false), 4000);
+                
+                // Show level up animation if leveled up
+                if (newProgress.level > oldLevel) {
+                    setPreviousLevel(oldLevel);
+                    setShowLevelUp(true);
+                    setTimeout(() => setShowLevelUp(false), 3000);
+                }
+                
+                // Clear the navigation state to prevent re-processing
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [location.state, classProgress.completedQuests, quests, classId, navigate, location.pathname]);
 
     // Load class progress on mount
     useEffect(() => {
@@ -678,6 +728,26 @@ export default function OptimizedCosmicMap() {
                     <div>🎯 Click orbs to view quests</div>
                 </div>
             </div>
+
+            {/* Quest Completion Notification */}
+            <AnimatePresence>
+                {showCompletionNotification && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -50, scale: 0.9 }}
+                        className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50"
+                    >
+                        <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/50 rounded-lg p-4 shadow-xl text-white text-center">
+                            <div className="flex items-center gap-2 mb-2">
+                                <CheckCircle className="w-5 h-5" />
+                                <span className="font-semibold">Quest Completed!</span>
+                            </div>
+                            <div className="text-sm">{completedQuestTitle}</div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <QuestModal
                 quest={selectedQuest}

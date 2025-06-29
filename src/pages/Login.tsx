@@ -82,7 +82,7 @@ const Login: React.FC = () => {
         
         // Navigate based on role
         if (response.data.user.role === 'Student') {
-          navigate('/onboarding');
+          navigate('/student-dashboard');
         } else {
           navigate('/dashboard');
         }

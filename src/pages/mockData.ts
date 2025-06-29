@@ -20,6 +20,7 @@ export interface Classroom {
   classSchedule?: string;
   classLocation?: string;
   classTags?: string;
+  classCode?: string;
 }
 
 export interface Quest {
@@ -121,6 +122,15 @@ export function getClassrooms(): Classroom[] {
 
 export function setClassrooms(classrooms: Classroom[]) {
   localStorage.setItem('classrooms', JSON.stringify(classrooms));
+}
+
+export function findClassroomByCode(classCode: string): Classroom | undefined {
+  const classrooms = getClassrooms();
+  console.log('Searching for classroom with code:', classCode);
+  console.log('Available classrooms:', classrooms);
+  const found = classrooms.find(classroom => classroom.classCode === classCode);
+  console.log('Found classroom:', found);
+  return found;
 }
 
 export function getQuestsForClass(classId: string): Quest[] {

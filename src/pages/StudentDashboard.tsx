@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { addQuestsForNewClass } from './mockData';
 
 const mockClasses = [
-  { id: 1, title: 'Galactic Math', subject: 'Mathematics', teacher: 'Ms. Nova', color: 'from-emerald-400 to-teal-500', students: 28, icon: Star, completed: true },
-  { id: 2, title: 'Quantum Physics', subject: 'Physics', teacher: 'Dr. Quark', color: 'from-cyan-400 to-blue-500', students: 24, icon: Zap, completed: false },
-  { id: 3, title: 'Stellar History', subject: 'History', teacher: 'Mr. Chronos', color: 'from-purple-400 to-pink-500', students: 32, icon: Crown, completed: false },
-  { id: 4, title: 'Space Engineering', subject: 'Engineering', teacher: 'Dr. Cosmos', color: 'from-orange-400 to-red-500', students: 19, icon: Rocket, completed: false },
+  { id: 1, title: 'Compiler Design', subject: 'Compiler Design', teacher: 'Ms. Nova', color: 'from-emerald-400 to-teal-500', students: 28, icon: Star, completed: true },
+  // { id: 2, title: 'Quantum Physics', subject: 'Physics', teacher: 'Dr. Quark', color: 'from-cyan-400 to-blue-500', students: 24, icon: Zap, completed: false },
+  // { id: 3, title: 'Stellar History', subject: 'History', teacher: 'Mr. Chronos', color: 'from-purple-400 to-pink-500', students: 32, icon: Crown, completed: false },
+  // { id: 4, title: 'DBMS', subject: 'Engineering', teacher: 'Dr. Cosmos', color: 'from-orange-400 to-red-500', students: 19, icon: Rocket, completed: false },
 ];
 
 const mockProfile = {

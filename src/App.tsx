@@ -15,6 +15,7 @@ import PetSelector from './screens/student/PetSelector.tsx';
 import Onboarding from './screens/student/Onboarding.jsx';
 import EdumonApp from './screens/student/Edumon.tsx';
 import StudentDashboard from './pages/StudentDashboard';
+import Marketplace from './pages/Marketplace';
 // Type assertions for JSX files
 const OnboardingComponent = Onboarding as React.ComponentType;
 const QuestDetailComponent = QuestDetailScreen as React.ComponentType;
@@ -47,7 +48,8 @@ const AppContent = () => {
                 <Route path="/level-map/:classId" element={<OptimizedCosmicMap />} />
                 <Route path="/levelmap/:classId" element={<OptimizedCosmicMap />} />
                 <Route path="/quest-detail" element={<QuestDetailComponent />} />
-                <Route path="/quiz" element={<QuizComponent />} />
+                <Route path="/quiz/:questId" element={<QuizComponent />} />
+                <Route path="/marketplace" element={<Marketplace />} />
                 <Route path="/Edu" element={<EdumonApp />} />
                 <Route path="/student-dashboard" element={<StudentDashboard />} />
             </Routes>

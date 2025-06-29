@@ -85,6 +85,15 @@ const ClassroomDetails: React.FC = () => {
       const newCode = generateCode();
       setClassCode(newCode);
       localStorage.setItem(`classCode_${id}`, newCode);
+      
+      // Store the class code in the classroom data
+      if (classroom) {
+        const updatedClassroom = { ...classroom, classCode: newCode };
+        const updatedClassrooms = classrooms.map(c => 
+          c.id === Number(id) ? updatedClassroom : c
+        );
+        setClassrooms(updatedClassrooms);
+      }
     }
 
     // Load persistent missions
@@ -103,7 +112,7 @@ const ClassroomDetails: React.FC = () => {
 
     // Mark as initialized after loading data
     setIsInitialized(true);
-  }, [id]);
+  }, [id, classroom, classrooms]);
 
   // Save missions to localStorage whenever missions state changes (only after initialization)
   useEffect(() => {
